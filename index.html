@@ -6,6 +6,10 @@
     <title>DanishHemat Topup - Murah & Cepat</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .modal { transition: opacity 0.25s ease; }
+        body.modal-active { overflow: hidden; }
+    </style>
 </head>
 <body class="bg-gray-900 text-white font-sans">
 
@@ -15,7 +19,6 @@
             <div class="hidden md:flex space-x-6">
                 <a href="#" class="hover:text-yellow-500 transition">Home</a>
                 <a href="#" class="hover:text-yellow-500 transition">Cek Pesanan</a>
-                <a href="#" class="hover:text-yellow-500 transition">Testimoni</a>
             </div>
             <button class="bg-yellow-500 text-black px-4 py-2 rounded-lg font-bold hover:bg-yellow-400">Login</button>
         </div>
@@ -38,35 +41,58 @@
         </h3>
         
         <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
-            <div class="bg-gray-800 rounded-2xl overflow-hidden hover:ring-2 hover:ring-yellow-500 transition-all cursor-pointer group shadow-lg">
-                <div class="relative">
-                    <img src="https://img.viva.co.id/main/content/2023/12/19/658133534b868-ilustrasi-mobile-legends-bang-bang_1265_711.jpg" alt="MLBB" class="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300">
-                    <div class="absolute top-2 right-2 bg-red-500 text-[10px] font-bold px-2 py-1 rounded">PROMO</div>
-                </div>
-                <div class="p-4 text-center">
-                    <p class="font-bold">Mobile Legends</p>
-                    <p class="text-xs text-gray-400 mt-1">Moonton</p>
-                </div>
+            <div onclick="openModal('Mobile Legends')" class="bg-gray-800 rounded-2xl overflow-hidden hover:ring-2 hover:ring-yellow-500 transition-all cursor-pointer group shadow-lg">
+                <img src="https://img.viva.co.id/main/content/2023/12/19/658133534b868-ilustrasi-mobile-legends-bang-bang_1265_711.jpg" class="w-full h-40 object-cover">
+                <div class="p-4 text-center font-bold">Mobile Legends</div>
             </div>
 
-            <div class="bg-gray-800 rounded-2xl overflow-hidden hover:ring-2 hover:ring-yellow-500 transition-all cursor-pointer group shadow-lg">
-                <div class="relative">
-                    <img src="https://garena.com/images/ff_logo.jpg" alt="FF" class="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300">
-                </div>
-                <div class="p-4 text-center">
-                    <p class="font-bold">Free Fire</p>
-                    <p class="text-xs text-gray-400 mt-1">Garena</p>
-                </div>
+            <div onclick="openModal('Free Fire')" class="bg-gray-800 rounded-2xl overflow-hidden hover:ring-2 hover:ring-yellow-500 transition-all cursor-pointer group shadow-lg">
+                <img src="https://garena.com/images/ff_logo.jpg" class="w-full h-40 object-cover">
+                <div class="p-4 text-center font-bold">Free Fire</div>
             </div>
-            
-            </div>
+        </div>
     </section>
 
-    <footer class="mt-20 py-10 bg-gray-800 border-t border-gray-700">
-        <div class="container mx-auto px-4 text-center">
-            <p class="text-gray-400">&copy; 2026 <b>DanishHemat Topup</b>. All Rights Reserved.</p>
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-[60]">
+        <div class="bg-gray-800 w-full max-w-md rounded-2xl p-6 relative">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl">&times;</button>
+            <h2 id="modalTitle" class="text-2xl font-bold mb-4 text-yellow-500">Top Up</h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm mb-1 text-gray-400">Masukkan ID Pemain</label>
+                    <input type="text" placeholder="Contoh: 12345678(1234)" class="w-full p-3 rounded bg-gray-700 border border-gray-600 focus:border-yellow-500 outline-none">
+                </div>
+                
+                <div>
+                    <label class="block text-sm mb-2 text-gray-400">Pilih Nominal</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button class="bg-gray-700 p-2 rounded hover:bg-yellow-600 text-sm">86 Diamonds - Rp20rb</button>
+                        <button class="bg-gray-700 p-2 rounded hover:bg-yellow-600 text-sm">172 Diamonds - Rp40rb</button>
+                        <button class="bg-gray-700 p-2 rounded hover:bg-yellow-600 text-sm">257 Diamonds - Rp60rb</button>
+                        <button class="bg-gray-700 p-2 rounded hover:bg-yellow-600 text-sm">706 Diamonds - Rp150rb</button>
+                    </div>
+                </div>
+
+                <button onclick="window.location.href='https://wa.me/628123456789?text=Halo%20DanishHemat%20saya%20mau%20topup'" class="w-full bg-green-600 hover:bg-green-500 p-3 rounded-xl font-bold flex items-center justify-center gap-2 mt-4">
+                    <i class="fab fa-whatsapp"></i> Bayar via WhatsApp
+                </button>
+            </div>
         </div>
+    </div>
+
+    <footer class="mt-20 py-10 bg-gray-800 border-t border-gray-700 text-center text-gray-400">
+        <p>&copy; 2026 <b>DanishHemat Topup</b>. All Rights Reserved.</p>
     </footer>
 
+    <script>
+        function openModal(gameName) {
+            document.getElementById('modalTitle').innerText = "Top Up " + gameName;
+            document.getElementById('modal').classList.remove('hidden');
+        }
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+        }
+    </script>
 </body>
 </html>
