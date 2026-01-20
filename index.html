@@ -3,120 +3,212 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DanishHemat Topup - Murah & Cepat</title>
+    <title>DanishHemat - Top Up Game Murah & Legal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0f172a; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .game-card:hover { transform: translateY(-10px); }
+        .bg-gradient-custom { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .text-gradient { background: linear-gradient(to right, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    </style>
 </head>
-<body class="bg-gray-900 text-white font-sans">
+<body class="text-slate-200">
 
-    <nav class="p-4 bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
+    <nav class="sticky top-0 z-50 glass border-b border-white/5 px-6 py-4">
         <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-yellow-500">DANISH<span class="text-white">HEMAT</span></h1>
-            <div class="hidden md:flex space-x-6">
-                <a href="#" class="hover:text-yellow-500 transition">Home</a>
-                <a href="#" class="hover:text-yellow-500 transition">Cek Pesanan</a>
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 bg-yellow-500 rounded-xl flex items-center justify-center shadow-lg shadow-yellow-500/20">
+                    <i class="fas fa-bolt text-black text-xl"></i>
+                </div>
+                <h1 class="text-2xl font-extrabold tracking-tight">DANISH<span class="text-yellow-500">HEMAT</span></h1>
             </div>
-            <button class="bg-yellow-500 text-black px-4 py-2 rounded-lg font-bold hover:bg-yellow-400">Login</button>
+            <div class="hidden md:flex items-center gap-8 font-semibold text-sm">
+                <a href="#" class="hover:text-yellow-500 transition text-yellow-500">Home</a>
+                <a href="#" class="hover:text-yellow-500 transition">Lacak Pesanan</a>
+                <a href="#" class="hover:text-yellow-500 transition">Testimoni</a>
+            </div>
+            <button class="bg-yellow-500 text-black px-6 py-2.5 rounded-full font-bold hover:bg-yellow-400 transition shadow-lg shadow-yellow-500/20 active:scale-95 text-sm">
+                Login
+            </button>
         </div>
     </nav>
 
-    <section class="container mx-auto mt-6 p-4">
-        <div class="bg-gradient-to-r from-green-600 to-teal-700 p-10 rounded-3xl shadow-2xl text-center border-b-4 border-green-800">
-            <h2 class="text-4xl md:text-5xl font-extrabold mb-2 text-white">DanishHemat Topup</h2>
-            <p class="text-lg text-green-50 text-opacity-90 italic">"Hematnya Bikin Nagih!"</p>
+    <section class="container mx-auto px-6 pt-12">
+        <div class="relative overflow-hidden rounded-[2.5rem] bg-gradient-custom p-12 md:p-20 shadow-2xl">
+            <div class="relative z-10 max-w-2xl">
+                <span class="bg-white/20 text-white px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest mb-6 inline-block">Flash Sale Available</span>
+                <h2 class="text-5xl md:text-6xl font-extrabold text-white leading-tight mb-6">
+                    Top Up Game <br><span class="text-yellow-300">Tanpa Ribet.</span>
+                </h2>
+                <p class="text-emerald-50 text-lg md:text-xl opacity-90 mb-10 leading-relaxed">
+                    Dapatkan harga termurah se-Indonesia dengan pengiriman instan 24 jam. Hemat uang Anda, naikkan rank Anda sekarang!
+                </p>
+                <div class="flex flex-wrap gap-4">
+                    <div class="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-lg border border-white/10">
+                        <i class="fas fa-check-circle text-yellow-300"></i>
+                        <span class="text-sm font-medium">Proses 1 Menit</span>
+                    </div>
+                    <div class="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-lg border border-white/10">
+                        <i class="fas fa-shield-alt text-yellow-300"></i>
+                        <span class="text-sm font-medium">100% Legal & Aman</span>
+                    </div>
+                </div>
+            </div>
+            <div class="absolute -right-20 -top-20 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
+            <div class="absolute right-10 bottom-10 opacity-20 hidden lg:block">
+                <i class="fas fa-gamepad text-[200px] text-white"></i>
+            </div>
         </div>
     </section>
 
-    <section class="container mx-auto mt-10 p-4">
-        <h3 class="text-2xl font-bold mb-8 flex items-center">
-            <span class="w-2 h-8 bg-yellow-500 mr-3 rounded-full"></span>
-            Pilih Game Favorit
-        </h3>
+    <section class="container mx-auto px-6 py-16">
+        <div class="flex items-center justify-between mb-10">
+            <div>
+                <h3 class="text-3xl font-bold flex items-center gap-3">
+                    <span class="w-2 h-10 bg-yellow-500 rounded-full"></span>
+                    Game Populer
+                </h3>
+                <p class="text-slate-400 mt-2">Pilih game favorit Anda dan mulai top up</p>
+            </div>
+            <div class="flex gap-2">
+                <button class="w-10 h-10 rounded-full glass flex items-center justify-center hover:bg-yellow-500 hover:text-black transition"><i class="fas fa-chevron-left"></i></button>
+                <button class="w-10 h-10 rounded-full glass flex items-center justify-center hover:bg-yellow-500 hover:text-black transition"><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
         
-        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
-            <div onclick="openModal('Mobile Legends')" class="bg-gray-800 rounded-2xl overflow-hidden hover:ring-2 hover:ring-yellow-500 transition-all cursor-pointer group shadow-xl">
-                <div class="relative bg-gray-700 h-48 overflow-hidden">
-                    <img src="./mlbb.jpg" alt="MLBB" class="w-full h-full object-cover group-hover:scale-110 transition duration-300" onerror="this.src='https://via.placeholder.com/300x400?text=MLBB+Image+Error'">
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8">
+            <div onclick="openModal('Mobile Legends')" class="game-card group cursor-pointer transition-all duration-500">
+                <div class="relative rounded-[2rem] overflow-hidden glass p-3 border-white/5 group-hover:border-yellow-500/50">
+                    <div class="relative h-64 rounded-2xl overflow-hidden mb-4">
+                        <img src="./mlbb.jpg" alt="MLBB" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent"></div>
+                        <span class="absolute top-4 left-4 bg-yellow-500 text-black text-[10px] font-extrabold px-3 py-1 rounded-full shadow-lg">HOT</span>
+                    </div>
+                    <div class="px-2 pb-2">
+                        <h4 class="font-bold text-lg group-hover:text-yellow-500 transition">Mobile Legends</h4>
+                        <p class="text-xs text-slate-500 font-medium uppercase tracking-wider mt-1">Moonton</p>
+                    </div>
                 </div>
-                <div class="p-4 text-center font-bold text-sm bg-gray-800">Mobile Legends</div>
             </div>
 
-            <div onclick="openModal('Free Fire')" class="bg-gray-800 rounded-2xl overflow-hidden hover:ring-2 hover:ring-yellow-500 transition-all cursor-pointer group shadow-xl">
-                <div class="relative bg-gray-700 h-48 overflow-hidden">
-                    <img src="./ff.jpg" alt="FF" class="w-full h-full object-cover group-hover:scale-110 transition duration-300" onerror="this.src='https://via.placeholder.com/300x400?text=FF+Image+Error'">
+            <div onclick="openModal('Free Fire')" class="game-card group cursor-pointer transition-all duration-500">
+                <div class="relative rounded-[2rem] overflow-hidden glass p-3 border-white/5 group-hover:border-yellow-500/50">
+                    <div class="relative h-64 rounded-2xl overflow-hidden mb-4">
+                        <img src="./ff.jpg" alt="FF" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent"></div>
+                        <span class="absolute top-4 left-4 bg-emerald-500 text-white text-[10px] font-extrabold px-3 py-1 rounded-full shadow-lg">PROMO</span>
+                    </div>
+                    <div class="px-2 pb-2">
+                        <h4 class="font-bold text-lg group-hover:text-yellow-500 transition">Free Fire</h4>
+                        <p class="text-xs text-slate-500 font-medium uppercase tracking-wider mt-1">Garena</p>
+                    </div>
                 </div>
-                <div class="p-4 text-center font-bold text-sm bg-gray-800">Free Fire</div>
             </div>
         </div>
     </section>
 
-    <div id="modal" class="fixed inset-0 bg-black bg-opacity-80 hidden flex items-center justify-center p-4 z-[60]">
-        <div class="bg-gray-800 w-full max-w-md rounded-2xl p-6 relative border border-gray-700 shadow-2xl">
-            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-3xl">&times;</button>
-            <h2 id="modalTitle" class="text-2xl font-bold mb-6 text-yellow-500">Top Up Game</h2>
+    <div id="modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm hidden flex items-center justify-center p-6 z-[100]">
+        <div class="glass w-full max-w-lg rounded-[2.5rem] p-8 relative shadow-2xl border-white/10">
+            <button onclick="closeModal()" class="absolute top-6 right-6 text-slate-400 hover:text-white transition text-3xl">&times;</button>
             
-            <div class="space-y-5">
-                <div>
-                    <label class="block text-sm mb-2 text-gray-400 font-bold">1. Masukkan User ID</label>
-                    <input type="text" id="userid" placeholder="Contoh: 12345678 (1234)" class="w-full p-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-yellow-500 outline-none text-white">
+            <div class="text-center mb-8">
+                <h2 id="modalTitle" class="text-3xl font-extrabold text-gradient">Top Up Game</h2>
+                <p class="text-slate-400 text-sm mt-2 font-medium">Lengkapi data untuk melanjutkan order</p>
+            </div>
+            
+            <div class="space-y-6">
+                <div class="space-y-3">
+                    <label class="block text-sm font-bold text-slate-300 ml-1">Masukkan ID & Zone</label>
+                    <div class="relative">
+                        <i class="fas fa-user absolute left-4 top-4 text-slate-500"></i>
+                        <input type="text" id="userid" placeholder="Contoh: 12345678 (1234)" 
+                        class="w-full pl-12 pr-4 py-4 rounded-2xl bg-slate-800/50 border border-white/5 focus:border-yellow-500 outline-none transition font-semibold text-white">
+                    </div>
                 </div>
                 
-                <div>
-                    <label class="block text-sm mb-2 text-gray-400 font-bold">2. Pilih Nominal</label>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button onclick="setNominal('86 Diamonds - Rp20.000')" class="bg-gray-700 p-3 rounded-lg hover:bg-yellow-500 hover:text-black transition text-xs font-bold border border-gray-600">86 Diamonds<br>Rp20.000</button>
-                        <button onclick="setNominal('172 Diamonds - Rp40.000')" class="bg-gray-700 p-3 rounded-lg hover:bg-yellow-500 hover:text-black transition text-xs font-bold border border-gray-600">172 Diamonds<br>Rp40.000</button>
-                        <button onclick="setNominal('257 Diamonds - Rp60.000')" class="bg-gray-700 p-3 rounded-lg hover:bg-yellow-500 hover:text-black transition text-xs font-bold border border-gray-600">257 Diamonds<br>Rp60.000</button>
-                        <button onclick="setNominal('706 Diamonds - Rp150.000')" class="bg-gray-700 p-3 rounded-lg hover:bg-yellow-500 hover:text-black transition text-xs font-bold border border-gray-600">706 Diamonds<br>Rp150.000</button>
+                <div class="space-y-3">
+                    <label class="block text-sm font-bold text-slate-300 ml-1">Pilih Produk</label>
+                    <div class="grid grid-cols-2 gap-3 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                        <button onclick="selectItem(this, '86 Diamonds - Rp20.000')" class="nominal-btn text-left p-4 rounded-2xl bg-slate-800/50 border border-white/5 hover:border-yellow-500 transition group">
+                            <p class="text-xs font-bold text-white group-hover:text-yellow-500">86 Diamonds</p>
+                            <p class="text-[10px] text-slate-500 font-bold mt-1 uppercase">Rp20.000</p>
+                        </button>
+                        <button onclick="selectItem(this, '172 Diamonds - Rp40.000')" class="nominal-btn text-left p-4 rounded-2xl bg-slate-800/50 border border-white/5 hover:border-yellow-500 transition group">
+                            <p class="text-xs font-bold text-white group-hover:text-yellow-500">172 Diamonds</p>
+                            <p class="text-[10px] text-slate-500 font-bold mt-1 uppercase">Rp40.000</p>
+                        </button>
+                        <button onclick="selectItem(this, '257 Diamonds - Rp60.000')" class="nominal-btn text-left p-4 rounded-2xl bg-slate-800/50 border border-white/5 hover:border-yellow-500 transition group">
+                            <p class="text-xs font-bold text-white group-hover:text-yellow-500">257 Diamonds</p>
+                            <p class="text-[10px] text-slate-500 font-bold mt-1 uppercase">Rp60.000</p>
+                        </button>
+                        <button onclick="selectItem(this, '706 Diamonds - Rp150.000')" class="nominal-btn text-left p-4 rounded-2xl bg-slate-800/50 border border-white/5 hover:border-yellow-500 transition group">
+                            <p class="text-xs font-bold text-white group-hover:text-yellow-500">706 Diamonds</p>
+                            <p class="text-[10px] text-slate-500 font-bold mt-1 uppercase">Rp150.000</p>
+                        </button>
                     </div>
                 </div>
 
-                <button onclick="kirimWA()" class="w-full bg-green-600 hover:bg-green-500 p-4 rounded-xl font-bold flex items-center justify-center gap-2 mt-4 transition shadow-lg shadow-green-900/20">
-                    <i class="fab fa-whatsapp text-xl"></i> BELI SEKARANG
+                <button onclick="checkoutWA()" class="w-full bg-yellow-500 hover:bg-yellow-400 text-black py-5 rounded-2xl font-extrabold flex items-center justify-center gap-3 mt-6 transition shadow-xl shadow-yellow-500/20 active:scale-95">
+                    <i class="fab fa-whatsapp text-2xl"></i> BELI SEKARANG
                 </button>
             </div>
         </div>
     </div>
 
-    <footer class="mt-20 py-10 bg-gray-800 border-t border-gray-700 text-center">
-        <p class="text-gray-400">&copy; 2026 <b>DanishHemat Topup</b>. All Rights Reserved.</p>
+    <footer class="mt-20 glass border-t border-white/5 py-12">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-xl font-extrabold mb-4 uppercase tracking-widest">DANISH<span class="text-yellow-500">HEMAT</span></h2>
+            <p class="text-slate-500 text-sm max-w-md mx-auto mb-8">Platform top up game terpercaya dengan sistem otomatis yang memudahkan transaksi para gamers Indonesia.</p>
+            <div class="flex justify-center gap-6 mb-10 text-xl text-slate-400">
+                <a href="#" class="hover:text-yellow-500 transition"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="hover:text-yellow-500 transition"><i class="fab fa-tiktok"></i></a>
+                <a href="#" class="hover:text-yellow-500 transition"><i class="fab fa-facebook"></i></a>
+            </div>
+            <p class="text-slate-600 text-[10px] font-bold uppercase tracking-[0.2em]">&copy; 2026 DanishHemat Topup. All Rights Reserved.</p>
+        </div>
     </footer>
 
     <script>
-        let gameAktif = "";
-        let nominalAktif = "";
+        let selectedGame = "";
+        let selectedProduct = "";
 
-        function openModal(namaGame) {
-            gameAktif = namaGame;
-            document.getElementById('modalTitle').innerText = "Top Up " + namaGame;
+        function openModal(game) {
+            selectedGame = game;
+            document.getElementById('modalTitle').innerText = "Top Up " + game;
             document.getElementById('modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
         }
 
         function closeModal() {
             document.getElementById('modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
         }
 
-        function setNominal(harga) {
-            nominalAktif = harga;
-            alert("Anda memilih: " + harga);
+        function selectItem(el, name) {
+            // Hapus style dari semua tombol
+            document.querySelectorAll('.nominal-btn').forEach(btn => {
+                btn.classList.remove('border-yellow-500', 'bg-yellow-500/10');
+            });
+            // Tambah style ke tombol terpilih
+            el.classList.add('border-yellow-500', 'bg-yellow-500/10');
+            selectedProduct = name;
         }
 
-        function kirimWA() {
-            const idUser = document.getElementById('userid').value;
-            const nomorAdmin = "6281391171712"; // Nomor Anda sudah terpasang
+        function checkoutWA() {
+            const id = document.getElementById('userid').value;
+            const noWA = "6281391171712"; 
             
-            if(!idUser || !nominalAktif) {
-                alert("Harap isi User ID dan Pilih Nominal dahulu!");
+            if(!id || !selectedProduct) {
+                alert("Wajib isi User ID dan Pilih Produk!");
                 return;
             }
 
-            const teksPesanan = `Halo DanishHemat, saya mau order:\n\nGame: ${gameAktif}\nID User: ${idUser}\nNominal: ${nominalAktif}\n\nMohon totalan harganya.`;
-            const linkWA = `https://wa.me/${nomorAdmin}?text=${encodeURIComponent(teksPesanan)}`;
-            
-            window.open(linkWA, '_blank');
+            const text = `*ORDER BARU - DANISHHEMAT*\n\n🎮 *Game*: ${selectedGame}\n🆔 *User ID*: ${id}\n💎 *Produk*: ${selectedProduct}\n\nMohon segera diproses ya Admin!`;
+            window.open(`https://wa.me/${noWA}?text=${encodeURIComponent(text)}`, '_blank');
         }
     </script>
 </body>
 </html>
-
-
