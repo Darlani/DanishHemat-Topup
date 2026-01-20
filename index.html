@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        /* Animasi agar modal halus */
         .modal { transition: opacity 0.25s ease; }
         body.modal-active { overflow: hidden; }
     </style>
@@ -42,60 +43,95 @@
         
         <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
             <div onclick="openModal('Mobile Legends')" class="bg-gray-800 rounded-2xl overflow-hidden hover:ring-2 hover:ring-yellow-500 transition-all cursor-pointer group shadow-lg">
-                <img src="mlbb.jpg" class="w-full h-40 object-cover border-b border-gray-700">
-                <div class="p-4 text-center font-bold">Mobile Legends</div>
+                <div class="relative overflow-hidden">
+                    <img src="mlbb.jpg" alt="Mobile Legends" class="w-full h-48 object-cover group-hover:scale-110 transition duration-300">
+                    <div class="absolute top-2 right-2 bg-red-500 text-[10px] font-bold px-2 py-1 rounded">PROMO</div>
+                </div>
+                <div class="p-4 text-center">
+                    <p class="font-bold">Mobile Legends</p>
+                    <p class="text-xs text-gray-400 mt-1">Moonton</p>
+                </div>
             </div>
 
             <div onclick="openModal('Free Fire')" class="bg-gray-800 rounded-2xl overflow-hidden hover:ring-2 hover:ring-yellow-500 transition-all cursor-pointer group shadow-lg">
-                <img src="ff.jpg" class="w-full h-40 object-cover border-b border-gray-700">
-                <div class="p-4 text-center font-bold">Free Fire</div>
+                <div class="relative overflow-hidden">
+                    <img src="ff.jpg" alt="Free Fire" class="w-full h-48 object-cover group-hover:scale-110 transition duration-300">
+                </div>
+                <div class="p-4 text-center">
+                    <p class="font-bold">Free Fire</p>
+                    <p class="text-xs text-gray-400 mt-1">Garena</p>
+                </div>
             </div>
         </div>
     </section>
 
-    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-[60]">
-        <div class="bg-gray-800 w-full max-w-md rounded-2xl p-6 relative">
-            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl">&times;</button>
-            <h2 id="modalTitle" class="text-2xl font-bold mb-4 text-yellow-500">Top Up</h2>
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-70 hidden flex items-center justify-center p-4 z-[60]">
+        <div class="bg-gray-800 w-full max-w-md rounded-2xl p-6 relative border border-gray-700 shadow-2xl">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">&times;</button>
+            <h2 id="modalTitle" class="text-2xl font-bold mb-4 text-yellow-500 underline decoration-yellow-500/30">Top Up Game</h2>
             
             <div class="space-y-4">
                 <div>
-                    <label class="block text-sm mb-1 text-gray-400">Masukkan ID Pemain</label>
-                    <input type="text" placeholder="Contoh: 12345678(1234)" class="w-full p-3 rounded bg-gray-700 border border-gray-600 focus:border-yellow-500 outline-none">
+                    <label class="block text-sm mb-1 text-gray-400 font-semibold">1. Masukkan User ID</label>
+                    <input type="text" id="userid" placeholder="Contoh: 12345678 (1234)" class="w-full p-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-yellow-500 outline-none text-white">
                 </div>
                 
                 <div>
-                    <label class="block text-sm mb-2 text-gray-400">Pilih Nominal</label>
+                    <label class="block text-sm mb-2 text-gray-400 font-semibold">2. Pilih Nominal Diamond</label>
                     <div class="grid grid-cols-2 gap-2">
-                        <button class="bg-gray-700 p-2 rounded hover:bg-yellow-600 text-sm">86 Diamonds - Rp20rb</button>
-                        <button class="bg-gray-700 p-2 rounded hover:bg-yellow-600 text-sm">172 Diamonds - Rp40rb</button>
-                        <button class="bg-gray-700 p-2 rounded hover:bg-yellow-600 text-sm">257 Diamonds - Rp60rb</button>
-                        <button class="bg-gray-700 p-2 rounded hover:bg-yellow-600 text-sm">706 Diamonds - Rp150rb</button>
+                        <button onclick="setNominal('86 Diamonds - Rp20.000')" class="bg-gray-700 p-3 rounded-lg hover:bg-yellow-600 hover:text-black transition text-xs font-bold border border-gray-600">86 Diamonds<br><span class="text-[10px] font-normal">Rp20.000</span></button>
+                        <button onclick="setNominal('172 Diamonds - Rp40.000')" class="bg-gray-700 p-3 rounded-lg hover:bg-yellow-600 hover:text-black transition text-xs font-bold border border-gray-600">172 Diamonds<br><span class="text-[10px] font-normal">Rp40.000</span></button>
+                        <button onclick="setNominal('257 Diamonds - Rp60.000')" class="bg-gray-700 p-3 rounded-lg hover:bg-yellow-600 hover:text-black transition text-xs font-bold border border-gray-600">257 Diamonds<br><span class="text-[10px] font-normal">Rp60.000</span></button>
+                        <button onclick="setNominal('706 Diamonds - Rp150.000')" class="bg-gray-700 p-3 rounded-lg hover:bg-yellow-600 hover:text-black transition text-xs font-bold border border-gray-600">706 Diamonds<br><span class="text-[10px] font-normal">Rp150.000</span></button>
                     </div>
                 </div>
 
-                <button onclick="window.location.href='https://wa.me/6281391171712?text=Halo%20DanishHemat%20saya%20mau%20topup'" class="w-full bg-green-600 hover:bg-green-500 p-3 rounded-xl font-bold flex items-center justify-center gap-2 mt-4">
-                    <i class="fab fa-whatsapp"></i> Bayar via WhatsApp
+                <button onclick="kirimWA()" class="w-full bg-green-600 hover:bg-green-500 p-4 rounded-xl font-bold flex items-center justify-center gap-2 mt-4 shadow-lg transition-transform active:scale-95">
+                    <i class="fab fa-whatsapp text-xl"></i> Beli Sekarang
                 </button>
+                <p class="text-[10px] text-center text-gray-500 italic">*Anda akan diarahkan ke WhatsApp untuk pembayaran</p>
             </div>
         </div>
     </div>
 
-    <footer class="mt-20 py-10 bg-gray-800 border-t border-gray-700 text-center text-gray-400">
-        <p>&copy; 2026 <b>DanishHemat Topup</b>. All Rights Reserved.</p>
+    <footer class="mt-20 py-10 bg-gray-800 border-t border-gray-700">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-gray-400">&copy; 2026 <b>DanishHemat Topup</b>. All Rights Reserved.</p>
+        </div>
     </footer>
 
     <script>
+        let selectedGame = "";
+        let selectedNominal = "";
+
         function openModal(gameName) {
+            selectedGame = gameName;
             document.getElementById('modalTitle').innerText = "Top Up " + gameName;
             document.getElementById('modal').classList.remove('hidden');
         }
+
         function closeModal() {
             document.getElementById('modal').classList.add('hidden');
+        }
+
+        function setNominal(nominal) {
+            selectedNominal = nominal;
+            alert("Nominal dipilih: " + nominal);
+        }
+
+        function kirimWA() {
+            const id = document.getElementById('userid').value;
+            const noWA = "6281391171712"; // GANTI DENGAN NOMOR WA ANDA (Contoh: 62852xxx)
+            
+            if(!id || !selectedNominal) {
+                alert("Mohon isi ID dan Pilih Nominal dulu!");
+                return;
+            }
+
+            const pesan = `Halo DanishHemat, saya ingin order:\n\nGame: ${selectedGame}\nID: ${id}\nNominal: ${selectedNominal}\n\nMohon instruksi pembayarannya.`;
+            const url = `https://wa.me/${noWA}?text=${encodeURIComponent(pesan)}`;
+            window.open(url, '_blank');
         }
     </script>
 </body>
 </html>
-
-
-
