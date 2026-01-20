@@ -88,4 +88,134 @@
             <div onclick="openModal('Free Fire')" class="game-card group cursor-pointer transition-all duration-500">
                 <div class="relative rounded-[2rem] overflow-hidden glass p-3 border-white/5 group-hover:border-yellow-500/50">
                     <div class="relative h-64 rounded-2xl overflow-hidden mb-4">
-                        <img src="./ff.jpg" alt="FF" class="w-full h-full object-cover transition
+                        <img src="./ff.jpg" alt="FF" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent"></div>
+                        <span class="absolute top-4 left-4 bg-amber-400 text-white text-[10px] font-extrabold px-3 py-1 rounded-full shadow-lg">PROMO</span>
+                    </div>
+                    <div class="px-2 pb-2 text-center">
+                        <h4 class="font-bold text-lg group-hover:text-yellow-500 transition">Free Fire</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div id="modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md hidden flex items-center justify-center p-6 z-[100]">
+        <div class="glass w-full max-w-lg rounded-[2.5rem] p-8 relative shadow-2xl border-white/10">
+            <button onclick="closeModal()" class="absolute top-6 right-6 text-slate-400 hover:text-white transition text-3xl">&times;</button>
+            
+            <div class="text-center mb-8">
+                <h2 id="modalTitle" class="text-3xl font-extrabold text-gradient">Top Up Game</h2>
+                <p class="text-slate-400 text-sm mt-1">Lengkapi data untuk memproses pesanan</p>
+            </div>
+            
+            <div class="space-y-6">
+                <div class="space-y-3">
+                    <label class="block text-sm font-bold text-slate-400 uppercase tracking-widest ml-1">1. Masukkan ID & Server</label>
+                    <div class="relative">
+                        <i class="fas fa-id-card absolute left-4 top-4 text-yellow-500"></i>
+                        <input type="text" id="userid" placeholder="Contoh: 12345678 (1234)" 
+                        class="w-full pl-12 pr-4 py-4 rounded-2xl bg-slate-900 border border-white/10 focus:border-yellow-500 outline-none transition font-bold text-white shadow-inner">
+                    </div>
+                </div>
+                
+                <div class="space-y-3">
+                    <label class="block text-sm font-bold text-slate-400 uppercase tracking-widest ml-1">2. Pilih Nominal</label>
+                    <div class="grid grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                        
+                        <button onclick="selectItem(this, '86 Diamonds - Rp20.000')" class="nominal-btn text-left p-4 rounded-2xl bg-slate-800/40 relative group overflow-hidden">
+                            <i class="fas fa-gem absolute -right-2 -bottom-2 text-3xl opacity-5 group-hover:opacity-20 transition text-yellow-500"></i>
+                            <p class="text-sm font-black text-white group-hover:text-yellow-500">86 Diamonds</p>
+                            <p class="text-[11px] text-yellow-500/80 font-bold mt-1">Rp20.000</p>
+                        </button>
+
+                        <button onclick="selectItem(this, '172 Diamonds - Rp40.000')" class="nominal-btn text-left p-4 rounded-2xl bg-slate-800/40 relative group overflow-hidden">
+                            <i class="fas fa-gem absolute -right-2 -bottom-2 text-3xl opacity-5 group-hover:opacity-20 transition text-yellow-500"></i>
+                            <p class="text-sm font-black text-white group-hover:text-yellow-500">172 Diamonds</p>
+                            <p class="text-[11px] text-yellow-500/80 font-bold mt-1">Rp40.000</p>
+                        </button>
+
+                        <button onclick="selectItem(this, '257 Diamonds - Rp60.000')" class="nominal-btn text-left p-4 rounded-2xl bg-slate-800/40 relative group overflow-hidden">
+                            <i class="fas fa-gem absolute -right-2 -bottom-2 text-3xl opacity-5 group-hover:opacity-20 transition text-yellow-500"></i>
+                            <p class="text-sm font-black text-white group-hover:text-yellow-500">257 Diamonds</p>
+                            <p class="text-[11px] text-yellow-500/80 font-bold mt-1">Rp60.000</p>
+                        </button>
+
+                        <button onclick="selectItem(this, '344 Diamonds - Rp80.000')" class="nominal-btn text-left p-4 rounded-2xl bg-slate-800/40 relative group overflow-hidden">
+                            <i class="fas fa-gem absolute -right-2 -bottom-2 text-3xl opacity-5 group-hover:opacity-20 transition text-yellow-500"></i>
+                            <p class="text-sm font-black text-white group-hover:text-yellow-500">344 Diamonds</p>
+                            <p class="text-[11px] text-yellow-500/80 font-bold mt-1">Rp80.000</p>
+                        </button>
+
+                        <button onclick="selectItem(this, '706 Diamonds - Rp150.000')" class="nominal-btn text-left p-4 rounded-2xl bg-slate-800/40 relative group overflow-hidden">
+                            <i class="fas fa-gem absolute -right-2 -bottom-2 text-3xl opacity-5 group-hover:opacity-20 transition text-yellow-500"></i>
+                            <p class="text-sm font-black text-white group-hover:text-yellow-500">706 Diamonds</p>
+                            <p class="text-[11px] text-yellow-500/80 font-bold mt-1">Rp150.000</p>
+                        </button>
+
+                        <button onclick="selectItem(this, 'Twilight Pass - Rp140.000')" class="nominal-btn text-left p-4 rounded-2xl bg-slate-800/40 relative group overflow-hidden border-blue-500/20">
+                            <i class="fas fa-star absolute -right-2 -bottom-2 text-3xl opacity-5 group-hover:opacity-20 transition text-blue-400"></i>
+                            <p class="text-sm font-black text-white group-hover:text-blue-400">Twilight Pass</p>
+                            <p class="text-[11px] text-blue-400/80 font-bold mt-1">Rp140.000</p>
+                        </button>
+
+                    </div>
+                </div>
+
+                <button onclick="checkoutWA()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-white py-5 rounded-[1.5rem] font-black flex items-center justify-center gap-3 mt-4 transition shadow-xl shadow-emerald-500/20 active:scale-95 uppercase tracking-widest">
+                    <i class="fab fa-whatsapp text-2xl"></i> Beli Sekarang
+                </button>
+                <p class="text-center text-slate-500 text-[10px] italic">Pesanan diteruskan ke WhatsApp Admin secara otomatis</p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-20 py-16 glass border-t border-white/5">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-2xl font-black mb-4 tracking-tighter">DANISH<span class="text-yellow-500">HEMAT</span></h2>
+            <p class="text-slate-500 text-sm max-w-md mx-auto mb-10">Penyedia layanan top up tercepat, legal, dan aman di Indonesia. Buka 24 Jam.</p>
+            <p class="text-slate-600 text-[11px] font-bold uppercase tracking-[0.4em]">&copy; 2026 DanishHemat Topup. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        let selectedGame = "";
+        let selectedProduct = "";
+
+        function openModal(game) {
+            selectedGame = game;
+            document.getElementById('modalTitle').innerText = "Top Up " + game;
+            document.getElementById('modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        function selectItem(el, name) {
+            // Hapus kelas terpilih dari semua tombol
+            document.querySelectorAll('.nominal-btn').forEach(btn => {
+                btn.classList.remove('selected-product');
+            });
+            // Tambahkan kelas terpilih ke elemen yang diklik
+            el.classList.add('selected-product');
+            selectedProduct = name;
+        }
+
+        function checkoutWA() {
+            const id = document.getElementById('userid').value;
+            const noWA = "6281391171712"; 
+            
+            if(!id || !selectedProduct) {
+                alert("Harap masukkan ID dan pilih produk terlebih dahulu!");
+                return;
+            }
+
+            const text = `*ORDER TOP UP - DANISHHEMAT*\n\n🎮 *Game*: ${selectedGame}\n🆔 *User ID*: ${id}\n💎 *Produk*: ${selectedProduct}\n\nMohon segera diproses, terima kasih!`;
+            window.open(`https://wa.me/${noWA}?text=${encodeURIComponent(text)}`, '_blank');
+        }
+    </script>
+</body>
+</html>
