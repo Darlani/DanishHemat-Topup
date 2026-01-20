@@ -6,11 +6,6 @@
     <title>DanishHemat Topup - Murah & Cepat</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        /* Animasi agar modal halus */
-        .modal { transition: opacity 0.25s ease; }
-        body.modal-active { overflow: hidden; }
-    </style>
 </head>
 <body class="bg-gray-900 text-white font-sans">
 
@@ -27,11 +22,8 @@
 
     <section class="container mx-auto mt-6 p-4">
         <div class="bg-gradient-to-r from-green-600 to-teal-700 p-10 rounded-3xl shadow-2xl text-center border-b-4 border-green-800">
-            <h2 class="text-4xl md:text-5xl font-extrabold mb-4">DanishHemat Topup</h2>
-            <p class="text-lg md:text-xl text-green-50 text-opacity-90">
-                Solusi Top Up Game <b>Tercepat</b>, <b>Termurah</b>, dan <b>Terpercaya</b> – 
-                <span class="text-yellow-300 font-bold italic">"Hematnya Bikin Nagih!"</span>
-            </p>
+            <h2 class="text-4xl md:text-5xl font-extrabold mb-2 text-white">DanishHemat Topup</h2>
+            <p class="text-lg text-green-50 text-opacity-90 italic">"Hematnya Bikin Nagih!"</p>
         </div>
     </section>
 
@@ -42,71 +34,61 @@
         </h3>
         
         <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
-            <div onclick="openModal('Mobile Legends')" class="bg-gray-800 rounded-2xl overflow-hidden hover:ring-2 hover:ring-yellow-500 transition-all cursor-pointer group shadow-lg">
-                <div class="relative overflow-hidden">
-                    <img src="mlbb.jpg" alt="Mobile Legends" class="w-full h-48 object-cover group-hover:scale-110 transition duration-300">
-                    <div class="absolute top-2 right-2 bg-red-500 text-[10px] font-bold px-2 py-1 rounded">PROMO</div>
+            <div onclick="openModal('Mobile Legends')" class="bg-gray-800 rounded-2xl overflow-hidden hover:ring-2 hover:ring-yellow-500 transition-all cursor-pointer group shadow-xl">
+                <div class="relative bg-gray-700 h-48 overflow-hidden">
+                    <img src="./mlbb.jpg" alt="MLBB" class="w-full h-full object-cover group-hover:scale-110 transition duration-300" onerror="this.src='https://via.placeholder.com/300x400?text=MLBB+Image+Error'">
                 </div>
-                <div class="p-4 text-center">
-                    <p class="font-bold">Mobile Legends</p>
-                    <p class="text-xs text-gray-400 mt-1">Moonton</p>
-                </div>
+                <div class="p-4 text-center font-bold text-sm bg-gray-800">Mobile Legends</div>
             </div>
 
-            <div onclick="openModal('Free Fire')" class="bg-gray-800 rounded-2xl overflow-hidden hover:ring-2 hover:ring-yellow-500 transition-all cursor-pointer group shadow-lg">
-                <div class="relative overflow-hidden">
-                    <img src="ff.jpg" alt="Free Fire" class="w-full h-48 object-cover group-hover:scale-110 transition duration-300">
+            <div onclick="openModal('Free Fire')" class="bg-gray-800 rounded-2xl overflow-hidden hover:ring-2 hover:ring-yellow-500 transition-all cursor-pointer group shadow-xl">
+                <div class="relative bg-gray-700 h-48 overflow-hidden">
+                    <img src="./ff.jpg" alt="FF" class="w-full h-full object-cover group-hover:scale-110 transition duration-300" onerror="this.src='https://via.placeholder.com/300x400?text=FF+Image+Error'">
                 </div>
-                <div class="p-4 text-center">
-                    <p class="font-bold">Free Fire</p>
-                    <p class="text-xs text-gray-400 mt-1">Garena</p>
-                </div>
+                <div class="p-4 text-center font-bold text-sm bg-gray-800">Free Fire</div>
             </div>
         </div>
     </section>
 
-    <div id="modal" class="fixed inset-0 bg-black bg-opacity-70 hidden flex items-center justify-center p-4 z-[60]">
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-80 hidden flex items-center justify-center p-4 z-[60]">
         <div class="bg-gray-800 w-full max-w-md rounded-2xl p-6 relative border border-gray-700 shadow-2xl">
-            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">&times;</button>
-            <h2 id="modalTitle" class="text-2xl font-bold mb-4 text-yellow-500 underline decoration-yellow-500/30">Top Up Game</h2>
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-3xl">&times;</button>
+            <h2 id="modalTitle" class="text-2xl font-bold mb-6 text-yellow-500">Top Up Game</h2>
             
-            <div class="space-y-4">
+            <div class="space-y-5">
                 <div>
-                    <label class="block text-sm mb-1 text-gray-400 font-semibold">1. Masukkan User ID</label>
+                    <label class="block text-sm mb-2 text-gray-400 font-bold">1. Masukkan User ID</label>
                     <input type="text" id="userid" placeholder="Contoh: 12345678 (1234)" class="w-full p-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-yellow-500 outline-none text-white">
                 </div>
                 
                 <div>
-                    <label class="block text-sm mb-2 text-gray-400 font-semibold">2. Pilih Nominal Diamond</label>
+                    <label class="block text-sm mb-2 text-gray-400 font-bold">2. Pilih Nominal</label>
                     <div class="grid grid-cols-2 gap-2">
-                        <button onclick="setNominal('86 Diamonds - Rp20.000')" class="bg-gray-700 p-3 rounded-lg hover:bg-yellow-600 hover:text-black transition text-xs font-bold border border-gray-600">86 Diamonds<br><span class="text-[10px] font-normal">Rp20.000</span></button>
-                        <button onclick="setNominal('172 Diamonds - Rp40.000')" class="bg-gray-700 p-3 rounded-lg hover:bg-yellow-600 hover:text-black transition text-xs font-bold border border-gray-600">172 Diamonds<br><span class="text-[10px] font-normal">Rp40.000</span></button>
-                        <button onclick="setNominal('257 Diamonds - Rp60.000')" class="bg-gray-700 p-3 rounded-lg hover:bg-yellow-600 hover:text-black transition text-xs font-bold border border-gray-600">257 Diamonds<br><span class="text-[10px] font-normal">Rp60.000</span></button>
-                        <button onclick="setNominal('706 Diamonds - Rp150.000')" class="bg-gray-700 p-3 rounded-lg hover:bg-yellow-600 hover:text-black transition text-xs font-bold border border-gray-600">706 Diamonds<br><span class="text-[10px] font-normal">Rp150.000</span></button>
+                        <button onclick="setNominal('86 Diamonds - Rp20.000')" class="bg-gray-700 p-3 rounded-lg hover:bg-yellow-500 hover:text-black transition text-xs font-bold border border-gray-600">86 Diamonds<br>Rp20.000</button>
+                        <button onclick="setNominal('172 Diamonds - Rp40.000')" class="bg-gray-700 p-3 rounded-lg hover:bg-yellow-500 hover:text-black transition text-xs font-bold border border-gray-600">172 Diamonds<br>Rp40.000</button>
+                        <button onclick="setNominal('257 Diamonds - Rp60.000')" class="bg-gray-700 p-3 rounded-lg hover:bg-yellow-500 hover:text-black transition text-xs font-bold border border-gray-600">257 Diamonds<br>Rp60.000</button>
+                        <button onclick="setNominal('706 Diamonds - Rp150.000')" class="bg-gray-700 p-3 rounded-lg hover:bg-yellow-500 hover:text-black transition text-xs font-bold border border-gray-600">706 Diamonds<br>Rp150.000</button>
                     </div>
                 </div>
 
-                <button onclick="kirimWA()" class="w-full bg-green-600 hover:bg-green-500 p-4 rounded-xl font-bold flex items-center justify-center gap-2 mt-4 shadow-lg transition-transform active:scale-95">
-                    <i class="fab fa-whatsapp text-xl"></i> Beli Sekarang
+                <button onclick="kirimWA()" class="w-full bg-green-600 hover:bg-green-500 p-4 rounded-xl font-bold flex items-center justify-center gap-2 mt-4 transition shadow-lg shadow-green-900/20">
+                    <i class="fab fa-whatsapp text-xl"></i> BELI SEKARANG
                 </button>
-                <p class="text-[10px] text-center text-gray-500 italic">*Anda akan diarahkan ke WhatsApp untuk pembayaran</p>
             </div>
         </div>
     </div>
 
-    <footer class="mt-20 py-10 bg-gray-800 border-t border-gray-700">
-        <div class="container mx-auto px-4 text-center">
-            <p class="text-gray-400">&copy; 2026 <b>DanishHemat Topup</b>. All Rights Reserved.</p>
-        </div>
+    <footer class="mt-20 py-10 bg-gray-800 border-t border-gray-700 text-center">
+        <p class="text-gray-400">&copy; 2026 <b>DanishHemat Topup</b>. All Rights Reserved.</p>
     </footer>
 
     <script>
-        let selectedGame = "";
-        let selectedNominal = "";
+        let gameAktif = "";
+        let nominalAktif = "";
 
-        function openModal(gameName) {
-            selectedGame = gameName;
-            document.getElementById('modalTitle').innerText = "Top Up " + gameName;
+        function openModal(namaGame) {
+            gameAktif = namaGame;
+            document.getElementById('modalTitle').innerText = "Top Up " + namaGame;
             document.getElementById('modal').classList.remove('hidden');
         }
 
@@ -114,23 +96,24 @@
             document.getElementById('modal').classList.add('hidden');
         }
 
-        function setNominal(nominal) {
-            selectedNominal = nominal;
-            alert("Nominal dipilih: " + nominal);
+        function setNominal(harga) {
+            nominalAktif = harga;
+            alert("Anda memilih: " + harga);
         }
 
         function kirimWA() {
-            const id = document.getElementById('userid').value;
-            const noWA = "6281391171712"; // GANTI DENGAN NOMOR WA ANDA (Contoh: 62852xxx)
+            const idUser = document.getElementById('userid').value;
+            const nomorAdmin = "6281391171712"; // Nomor Anda sudah terpasang
             
-            if(!id || !selectedNominal) {
-                alert("Mohon isi ID dan Pilih Nominal dulu!");
+            if(!idUser || !nominalAktif) {
+                alert("Harap isi User ID dan Pilih Nominal dahulu!");
                 return;
             }
 
-            const pesan = `Halo DanishHemat, saya ingin order:\n\nGame: ${selectedGame}\nID: ${id}\nNominal: ${selectedNominal}\n\nMohon instruksi pembayarannya.`;
-            const url = `https://wa.me/${noWA}?text=${encodeURIComponent(pesan)}`;
-            window.open(url, '_blank');
+            const teksPesanan = `Halo DanishHemat, saya mau order:\n\nGame: ${gameAktif}\nID User: ${idUser}\nNominal: ${nominalAktif}\n\nMohon totalan harganya.`;
+            const linkWA = `https://wa.me/${nomorAdmin}?text=${encodeURIComponent(teksPesanan)}`;
+            
+            window.open(linkWA, '_blank');
         }
     </script>
 </body>
