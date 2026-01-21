@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 
 module.exports = async (req, res) => {
-    // Header untuk keamanan dan akses
+    // Header CORS agar tidak diblokir browser
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -12,14 +12,12 @@ module.exports = async (req, res) => {
     try {
         const { userid, game, product, price } = req.body;
 
-        // --- PASTIKAN DATA INI BENAR SESUAI DASHBOARD ---
-        const merchantCode = 'DS27606'; // Ganti dengan Kode Merchant Anda
-        const apiKey = '5c32a1f212281470dd2613ed52b5a370'; // Ganti dengan API Key Anda
-        // ----------------------------------------------
-
+        // --- DATA ANDA ---
+        const merchantCode = 'DS27606'; 
+        const apiKey = '5c32a1f212281470dd2613ed52b5a370'; 
         const merchantOrderId = 'DH-' + Date.now();
         
-        // Buat Signature MD5
+        // --- SIGNATURE MD5 ---
         const stringToHash = merchantCode + merchantOrderId + price + apiKey;
         const signature = crypto.createHash('md5').update(stringToHash).digest('hex');
 
@@ -35,6 +33,7 @@ module.exports = async (req, res) => {
             expiryPeriod: 60
         };
 
+        // Mengirim data ke Duitku Sandbox
         const response = await fetch('https://passport-sandbox.duitku.com/webapi/api/merchant/v2/inquiry', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -42,6 +41,8 @@ module.exports = async (req, res) => {
         });
 
         const data = await response.json();
+        
+        // Jika Duitku sukses memberikan reference, kirim ke frontend
         return res.status(200).json(data);
 
     } catch (error) {
