@@ -1,20 +1,23 @@
-import crypto from 'crypto';
-import axios from 'axios';
+const crypto = require('crypto');
 
-export default async function handler(req, res) {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ message: 'Method Not Allowed' });
-    }
+module.exports = async (req, res) => {
+    // 1. Set Header CORS agar bisa diakses dari frontend
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    if (req.method === 'OPTIONS') return res.status(200).end();
+    if (req.method !== 'POST') return res.status(405).json({ message: 'Method Not Allowed' });
 
     try {
         const { userid, game, product, price } = req.body;
 
-        // AMBIL DARI GAMBAR DASHBOARD ANDA
-        const merchantCode = 'DS27606'; // Ganti dengan Merchant Code Anda
+        // --- KONFIGURASI ---
+        const merchantCode = 'DS27606'; // Ganti dengan Kode D Anda
         const apiKey = '5c32a1f212281470dd2613ed52b5a370'; // Ganti dengan API Key Anda
         const merchantOrderId = 'DH-' + Date.now();
         
-        // Buat Signature MD5
+        // --- SIGNATURE ---
         const stringToHash = merchantCode + merchantOrderId + price + apiKey;
         const signature = crypto.createHash('md5').update(stringToHash).digest('hex');
 
@@ -30,17 +33,17 @@ export default async function handler(req, res) {
             expiryPeriod: 60
         };
 
-        const response = await axios.post('https://passport-sandbox.duitku.com/webapi/api/merchant/v2/inquiry', payload, {
-            headers: { 'Content-Type': 'application/json' }
+        // --- HIT DUITKU ---
+        const response = await fetch('https://passport-sandbox.duitku.com/webapi/api/merchant/v2/inquiry', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
         });
 
-        return res.status(200).json(response.data);
+        const data = await response.json();
+        return res.status(200).json(data);
 
     } catch (error) {
-        // Ini akan membantu kita melihat error asli di Tab Network browser
-        return res.status(500).json({ 
-            statusMessage: "Error", 
-            error: error.response ? error.response.data : error.message 
-        });
+        return res.status(500).json({ statusMessage: "Server Error", error: error.message });
     }
-}
+};
