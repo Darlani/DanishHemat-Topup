@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 
 module.exports = async (req, res) => {
-    // Header CORS agar tidak diblokir browser
+    // Header CORS agar browser tidak memblokir koneksi
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -12,18 +12,22 @@ module.exports = async (req, res) => {
     try {
         const { userid, game, product, price } = req.body;
 
-        // --- DATA ANDA ---
+        // --- DATA MERCHANT ANDA ---
         const merchantCode = 'DS27606'; 
         const apiKey = '5c32a1f212281470dd2613ed52b5a370'; 
         const merchantOrderId = 'DH-' + Date.now();
         
+        // Pastikan price adalah angka murni
+        const amount = parseInt(price);
+        
         // --- SIGNATURE MD5 ---
-        const stringToHash = merchantCode + merchantOrderId + price + apiKey;
+        // Format: merchantCode + merchantOrderId + paymentAmount + apiKey
+        const stringToHash = merchantCode + merchantOrderId + amount + apiKey;
         const signature = crypto.createHash('md5').update(stringToHash).digest('hex');
 
         const payload = {
             merchantCode,
-            paymentAmount: parseInt(price),
+            paymentAmount: amount,
             merchantOrderId,
             productDetails: `Topup ${game} - ${product} (${userid})`,
             email: 'customer@gmail.com',
@@ -33,7 +37,7 @@ module.exports = async (req, res) => {
             expiryPeriod: 60
         };
 
-        // Mengirim data ke Duitku Sandbox
+        // Kirim ke Duitku menggunakan fetch bawaan Node.js
         const response = await fetch('https://passport-sandbox.duitku.com/webapi/api/merchant/v2/inquiry', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -42,10 +46,11 @@ module.exports = async (req, res) => {
 
         const data = await response.json();
         
-        // Jika Duitku sukses memberikan reference, kirim ke frontend
+        // Kirim balik respon Duitku ke Frontend
         return res.status(200).json(data);
 
     } catch (error) {
-        return res.status(500).json({ statusMessage: "Server Error", details: error.message });
+        // Jika crash, kirim detail errornya
+        return res.status(500).json({ statusMessage: "Server Error", error: error.message });
     }
 };
