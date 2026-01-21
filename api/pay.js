@@ -1,7 +1,8 @@
 const crypto = require('crypto');
 const axios = require('axios');
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
+    // Memastikan hanya POST yang diizinkan
     if (req.method !== 'POST') {
         return res.status(405).json({ message: 'Method Not Allowed' });
     }
@@ -9,17 +10,12 @@ export default async function handler(req, res) {
     try {
         const { userid, game, product, price } = req.body;
 
-        // --- VALIDASI DATA ---
-        if (!userid || !price) {
-            return res.status(400).json({ statusMessage: "Data tidak lengkap" });
-        }
-
-        // --- MASUKKAN DATA SANDBOX ---
-        const merchantCode = 'DS27606'; // GANTI DENGAN KODE D ANDA
-        const apiKey = '5c32a1f212281470dd2613ed52b5a370'; // GANTI DENGAN API KEY ANDA
+        // --- KONFIGURASI ---
+        const merchantCode = 'DS27606'; // Ganti dengan Merchant Code Anda
+        const apiKey = '5c32a1f212281470dd2613ed52b5a370'; // Ganti dengan API Key Anda
         const merchantOrderId = 'DH-' + Date.now();
         
-        // --- BUAT SIGNATURE ---
+        // --- SIGNATURE ---
         const stringToHash = merchantCode + merchantOrderId + price + apiKey;
         const signature = crypto.createHash('md5').update(stringToHash).digest('hex');
 
@@ -27,7 +23,7 @@ export default async function handler(req, res) {
             merchantCode,
             paymentAmount: parseInt(price),
             merchantOrderId,
-            productDetails: `Topup ${game} - ${product} (${userid})`,
+            productDetails: `Topup ${game} - ${product}`,
             email: 'customer@gmail.com',
             signature,
             callbackUrl: `https://${req.headers.host}/api/callback`,
@@ -35,20 +31,22 @@ export default async function handler(req, res) {
             expiryPeriod: 60
         };
 
-        // --- CALL DUITKU ---
+        // --- HIT API DUITKU ---
         const response = await axios.post('https://passport-sandbox.duitku.com/webapi/api/merchant/v2/inquiry', payload, {
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json' },
+            timeout: 15000
         });
 
-        // Kirim hasil dari Duitku ke Frontend
+        // Kirim hasil ke frontend
         return res.status(200).json(response.data);
 
     } catch (error) {
-        // Jika Duitku memberikan error (misal: signature salah)
-        if (error.response) {
-            return res.status(200).json(error.response.data);
-        }
-        // Jika error koneksi server
-        return res.status(500).json({ statusMessage: "Server Error: " + error.message });
+        console.error("Backend Error:", error.message);
+        
+        // Kirim detail error agar kita bisa baca di browser
+        return res.status(500).json({ 
+            statusMessage: "Error Backend", 
+            details: error.response ? error.response.data : error.message 
+        });
     }
-}
+};
