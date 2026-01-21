@@ -14,6 +14,7 @@
         .bg-gradient-custom { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
         .text-gradient { background: linear-gradient(to right, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     </style>
+    <script src="https://app-sandbox.duitku.com/lib/js/duitku.js"></script>
 </head>
 <body class="text-slate-200">
 
@@ -151,9 +152,9 @@
                     </div>
                 </div>
 
-                <button onclick="checkoutWA()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-white py-5 rounded-2xl font-extrabold flex items-center justify-center gap-3 mt-6 transition shadow-xl shadow-emerald-500/20 active:scale-95">
-    <i class="fab fa-whatsapp text-2xl"></i> BELI SEKARANG
-                </button>
+                <button id="btn-bayar" onclick="prosesPembayaran()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white py-5 rounded-2xl font-extrabold flex items-center justify-center gap-3 mt-6 transition shadow-xl shadow-blue-500/20 active:scale-95">
+    <i class="fas fa-credit-card text-2xl"></i> BAYAR SEKARANG
+</button>
             </div>
         </div>
     </div>
@@ -197,14 +198,59 @@
             selectedProduct = name;
         }
 
-        function checkoutWA() {
-            const id = document.getElementById('userid').value;
-            const noWA = "6281391171712"; 
-            
-            if(!id || !selectedProd || !selectedPay) {
-                alert("Lengkapi ID, Produk, dan Metode Pembayaran!");
-                return;
+        async function prosesPembayaran() {
+    const userid = document.getElementById('userid').value;
+    const btn = document.getElementById('btn-bayar');
+
+    if(!userid || !selectedProduct) {
+        alert("Mohon isi User ID dan pilih produk terlebih dahulu!");
+        return;
+    }
+
+    // Animasi Loading
+    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin text-2xl"></i> MENYIAPKAN PEMBAYARAN...';
+    btn.disabled = true;
+
+    try {
+        // 1. Meminta token pembayaran dari backend PHP Anda
+        const response = await fetch('request_payment.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+                'userid': userid,
+                'game': selectedGame,
+                'product': selectedProduct,
+                'price': selectedPrice // Pastikan variabel ini sudah terisi saat pilih produk
+            })
+        });
+
+        const data = await response.json();
+
+        // 2. Memanggil Jendela Pembayaran Duitku
+        checkout.process(data.reference, {
+            successEvent: function(result) {
+                alert("Pembayaran Berhasil! Pesanan sedang diproses.");
+                location.reload();
+            },
+            pendingEvent: function(result) {
+                alert("Menunggu pembayaran Anda.");
+            },
+            errorEvent: function(result) {
+                alert("Pembayaran gagal atau dibatalkan.");
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-credit-card text-2xl"></i> BAYAR SEKARANG';
+            },
+            closeEvent: function(result) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-credit-card text-2xl"></i> BAYAR SEKARANG';
             }
+        });
+    } catch (error) {
+        alert("Gagal terhubung ke server pembayaran.");
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-credit-card text-2xl"></i> BAYAR SEKARANG';
+    }
+}
 
             const text = `*ORDER BARU - DANISHHEMAT*\n\n🎮 *Game*: ${selectedGame}\n🆔 *User ID*: ${id}\n💎 *Produk*: ${selectedProduct}\n\nMohon segera diproses ya Admin!`;
             window.open(`https://wa.me/${noWA}?text=${encodeURIComponent(text)}`, '_blank');
@@ -212,5 +258,6 @@
     </script>
 </body>
 </html>
+
 
 
