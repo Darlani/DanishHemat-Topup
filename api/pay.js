@@ -31,11 +31,11 @@ export default async function handler(req, res) {
     };
 
     try {
-        const response = await fetch('https://passport.duitku.com/webapi/api/merchant/v2/inquiry', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
+        const response = await fetch('https://passport-sandbox.duitku.com/webapi/api/merchant/v2/inquiry', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+});
 
         const result = await response.json();
         res.status(200).json(result);
