@@ -202,19 +202,19 @@ function selectItem(el, name) {
 
 async function prosesPembayaran() {
     const userid = document.getElementById('userid').value;
-    const btnBeli = document.querySelector('button[onclick*="WA"]'); // Ambil tombol beli
+    const btn = document.getElementById('btn-bayar');
 
     if(!userid || !selectedProduct) {
-        alert("Wajib isi User ID dan Pilih Produk!");
+        alert("Mohon isi User ID dan pilih produk terlebih dahulu!");
         return;
     }
 
-    // Ubah tampilan tombol saat loading
-    btnBeli.innerHTML = '<i class="fas fa-spinner fa-spin"></i> MEMPROSES...';
-    btnBeli.disabled = true;
+    // Animasi Loading
+    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin text-2xl"></i> MENYIAPKAN PEMBAYARAN...';
+    btn.disabled = true;
 
     try {
-        // Mengirim data ke file PHP backend Anda
+        // 1. Meminta token pembayaran dari backend PHP Anda
         const response = await fetch('request_payment.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -222,29 +222,41 @@ async function prosesPembayaran() {
                 'userid': userid,
                 'game': selectedGame,
                 'product': selectedProduct,
-                'price': selectedPrice
+                'price': selectedPrice // Pastikan variabel ini sudah terisi saat pilih produk
             })
         });
 
-        const result = await response.json();
+        const data = await response.json();
 
-        if(result.paymentUrl) {
-            // Mengarahkan user ke halaman pembayaran Duitku
-            window.location.href = result.paymentUrl;
-        } else {
-            alert("Gagal membuat pesanan: " + (result.statusMessage || "Error Sistem"));
-            btnBeli.innerHTML = '<i class="fab fa-whatsapp text-2xl"></i> COBA LAGI';
-            btnBeli.disabled = false;
-        }
+        // 2. Memanggil Jendela Pembayaran Duitku
+        checkout.process(data.reference, {
+            successEvent: function(result) {
+                alert("Pembayaran Berhasil! Pesanan sedang diproses.");
+                location.reload();
+            },
+            pendingEvent: function(result) {
+                alert("Menunggu pembayaran Anda.");
+            },
+            errorEvent: function(result) {
+                alert("Pembayaran gagal atau dibatalkan.");
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-credit-card text-2xl"></i> BAYAR SEKARANG';
+            },
+            closeEvent: function(result) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-credit-card text-2xl"></i> BAYAR SEKARANG';
+            }
+        });
     } catch (error) {
-        console.error(error);
-        alert("Koneksi ke server gagal!");
-        btnBeli.disabled = false;
+        alert("Gagal terhubung ke server pembayaran.");
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-credit-card text-2xl"></i> BAYAR SEKARANG';
     }
 }
     </script>
 </body>
 </html>
+
 
 
 
