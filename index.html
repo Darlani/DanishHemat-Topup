@@ -196,16 +196,18 @@ function selectItem(el, name) {
     el.classList.add('border-yellow-500', 'bg-yellow-500/10');
     
     selectedProduct = name;
-    // Mengambil angka saja dari string "Rp20.000" -> 20000
-    selectedPrice = name.split('Rp')[1].replace(/\./g, '');
+    
+    // Ambil hanya angka dari string harga (misal Rp20.000 -> 20000)
+    const rawPrice = name.split('Rp')[1];
+    selectedPrice = parseInt(rawPrice.replace(/\./g, '').trim());
 }
 
 async function prosesPembayaran() {
     const userid = document.getElementById('userid').value;
     const btn = document.getElementById('btn-bayar');
 
-    if(!userid || !selectedProduct) {
-        alert("Pilih ID dan Produk!");
+    if(!userid || !selectedProduct || !selectedPrice) {
+        alert("Mohon isi ID dan pilih produk!");
         return;
     }
 
@@ -213,7 +215,6 @@ async function prosesPembayaran() {
     btn.disabled = true;
 
     try {
-        // Panggil backend Vercel (api/pay.js)
         const response = await fetch('/api/pay', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -221,35 +222,47 @@ async function prosesPembayaran() {
                 userid: userid,
                 game: selectedGame,
                 product: selectedProduct,
-                price: selectedPrice
+                price: selectedPrice // Kirim angka murni
             })
         });
 
+        // Cek jika response sukses
+        if (!response.ok) {
+            throw new Error('Gagal menghubungi server backend');
+        }
+
         const data = await response.json();
 
-        if(data.reference) {
-            // Memanggil Popup Duitku
+        if(data && data.reference) {
             checkout.process(data.reference, {
                 successEvent: function(result) {
                     alert("Pembayaran Berhasil!");
                     location.reload();
                 },
-                pendingEvent: function(result) { alert("Selesaikan pembayaran Anda."); },
-                errorEvent: function(result) { alert("Gagal!"); btn.disabled = false; },
-                closeEvent: function(result) { btn.disabled = false; }
+                pendingEvent: function(result) { alert("Menunggu Pembayaran..."); },
+                errorEvent: function(result) { alert("Pembayaran Gagal!"); btn.disabled = false; },
+                closeEvent: function(result) { 
+                    btn.disabled = false; 
+                    btn.innerHTML = '<i class="fas fa-credit-card text-2xl"></i> BAYAR SEKARANG';
+                }
             });
         } else {
-            alert("Error: " + data.statusMessage);
+            // Jika data.reference undefined, tampilkan pesan error dari Duitku
+            alert("Error Duitku: " + (data.statusMessage || "Gagal mendapatkan token"));
             btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-credit-card text-2xl"></i> BAYAR SEKARANG';
         }
     } catch (error) {
-        alert("Gagal terhubung ke Serverless Function.");
+        console.error(error);
+        alert("Sistem Error: " + error.message);
         btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-credit-card text-2xl"></i> BAYAR SEKARANG';
     }
 }
     </script>
 </body>
 </html>
+
 
 
 
