@@ -197,43 +197,14 @@
             selectedProduct = name;
         }
 
-        async function bayarDulu() {
-    const userid = document.getElementById('userid').value;
-    
-    if(!userid || !selectedProduct) {
-        alert("Pilih produk dan masukkan ID!");
-        return;
-    }
-
-    // Ambil nominal harga dari string (Contoh: "Rp20.000" -> 20000)
-    const price = selectedProduct.split('Rp')[1].replace('.', '');
-
-    try {
-        // Memanggil file backend Anda untuk request transaksi
-        const response = await fetch('request_payment.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                userId: userid,
-                game: selectedGame,
-                product: selectedProduct,
-                amount: price
-            })
-        });
-
-        const data = await response.json();
-
-        if(data.paymentUrl) {
-            // Membuka jendela pembayaran Duitku
-            window.location.href = data.paymentUrl;
-        } else {
-            alert("Gagal membuat pesanan: " + data.message);
-        }
-    } catch (error) {
-        console.error(error);
-        alert("Terjadi kesalahan sistem.");
-    }
-}
+        function checkoutWA() {
+            const id = document.getElementById('userid').value;
+            const noWA = "6281391171712"; 
+            
+            if(!id || !selectedProd || !selectedPay) {
+                alert("Lengkapi ID, Produk, dan Metode Pembayaran!");
+                return;
+            }
 
             const text = `*ORDER BARU - DANISHHEMAT*\n\n🎮 *Game*: ${selectedGame}\n🆔 *User ID*: ${id}\n💎 *Produk*: ${selectedProduct}\n\nMohon segera diproses ya Admin!`;
             window.open(`https://wa.me/${noWA}?text=${encodeURIComponent(text)}`, '_blank');
@@ -241,4 +212,5 @@
     </script>
 </body>
 </html>
+
 
