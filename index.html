@@ -174,45 +174,47 @@
 
     <script>
         let selectedGame = "";
-        let selectedProduct = "";
+let selectedProduct = "";
+let selectedPrice = 0;
 
-        function openModal(game) {
-            selectedGame = game;
-            document.getElementById('modalTitle').innerText = "Top Up " + game;
-            document.getElementById('modal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
+function openModal(game) {
+    selectedGame = game;
+    document.getElementById('modalTitle').innerText = "Top Up " + game;
+    document.getElementById('modal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
 
-        function closeModal() {
-            document.getElementById('modal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        }
+function closeModal() {
+    document.getElementById('modal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
 
-        function selectItem(el, name) {
-            // Hapus style dari semua tombol
-            document.querySelectorAll('.nominal-btn').forEach(btn => {
-                btn.classList.remove('border-yellow-500', 'bg-yellow-500/10');
-            });
-            // Tambah style ke tombol terpilih
-            el.classList.add('border-yellow-500', 'bg-yellow-500/10');
-            selectedProduct = name;
-        }
+function selectItem(el, name) {
+    document.querySelectorAll('.nominal-btn').forEach(btn => {
+        btn.classList.remove('border-yellow-500', 'bg-yellow-500/10');
+    });
+    el.classList.add('border-yellow-500', 'bg-yellow-500/10');
+    
+    selectedProduct = name;
+    // Mengambil angka saja dari string "Rp20.000" -> 20000
+    selectedPrice = name.split('Rp')[1].replace(/\./g, '');
+}
 
-        async function prosesPembayaran() {
+async function prosesPembayaran() {
     const userid = document.getElementById('userid').value;
-    const btn = document.getElementById('btn-bayar');
+    const btnBeli = document.querySelector('button[onclick*="WA"]'); // Ambil tombol beli
 
     if(!userid || !selectedProduct) {
-        alert("Mohon isi User ID dan pilih produk terlebih dahulu!");
+        alert("Wajib isi User ID dan Pilih Produk!");
         return;
     }
 
-    // Animasi Loading
-    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin text-2xl"></i> MENYIAPKAN PEMBAYARAN...';
-    btn.disabled = true;
+    // Ubah tampilan tombol saat loading
+    btnBeli.innerHTML = '<i class="fas fa-spinner fa-spin"></i> MEMPROSES...';
+    btnBeli.disabled = true;
 
     try {
-        // 1. Meminta token pembayaran dari backend PHP Anda
+        // Mengirim data ke file PHP backend Anda
         const response = await fetch('request_payment.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -220,44 +222,30 @@
                 'userid': userid,
                 'game': selectedGame,
                 'product': selectedProduct,
-                'price': selectedPrice // Pastikan variabel ini sudah terisi saat pilih produk
+                'price': selectedPrice
             })
         });
 
-        const data = await response.json();
+        const result = await response.json();
 
-        // 2. Memanggil Jendela Pembayaran Duitku
-        checkout.process(data.reference, {
-            successEvent: function(result) {
-                alert("Pembayaran Berhasil! Pesanan sedang diproses.");
-                location.reload();
-            },
-            pendingEvent: function(result) {
-                alert("Menunggu pembayaran Anda.");
-            },
-            errorEvent: function(result) {
-                alert("Pembayaran gagal atau dibatalkan.");
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-credit-card text-2xl"></i> BAYAR SEKARANG';
-            },
-            closeEvent: function(result) {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-credit-card text-2xl"></i> BAYAR SEKARANG';
-            }
-        });
+        if(result.paymentUrl) {
+            // Mengarahkan user ke halaman pembayaran Duitku
+            window.location.href = result.paymentUrl;
+        } else {
+            alert("Gagal membuat pesanan: " + (result.statusMessage || "Error Sistem"));
+            btnBeli.innerHTML = '<i class="fab fa-whatsapp text-2xl"></i> COBA LAGI';
+            btnBeli.disabled = false;
+        }
     } catch (error) {
-        alert("Gagal terhubung ke server pembayaran.");
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-credit-card text-2xl"></i> BAYAR SEKARANG';
+        console.error(error);
+        alert("Koneksi ke server gagal!");
+        btnBeli.disabled = false;
     }
 }
-
-            const text = `*ORDER BARU - DANISHHEMAT*\n\n🎮 *Game*: ${selectedGame}\n🆔 *User ID*: ${id}\n💎 *Produk*: ${selectedProduct}\n\nMohon segera diproses ya Admin!`;
-            window.open(`https://wa.me/${noWA}?text=${encodeURIComponent(text)}`, '_blank');
-        }
     </script>
 </body>
 </html>
+
 
 
 
