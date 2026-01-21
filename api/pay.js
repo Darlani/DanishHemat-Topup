@@ -7,8 +7,8 @@ export default async function handler(req, res) {
     const { userid, game, product, price } = req.body;
 
     // Pastikan variabel ini ada di Dashboard Duitku (Mode Produksi)
-    const merchantCode = 'MXXXXX'; 
-    const apiKey = 'YOUR_API_KEY';
+    const merchantCode = 'DS27606'; 
+    const apiKey = '5c32a1f212281470dd2613ed52b5a370';
     const merchantOrderId = 'DH-' + Date.now();
 
     // Pastikan price adalah integer
