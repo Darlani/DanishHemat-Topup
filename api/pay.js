@@ -1,8 +1,7 @@
-const crypto = require('crypto');
-const https = require('https');
+import crypto from 'crypto';
+import axios from 'axios';
 
-module.exports = async (req, res) => {
-    // Hanya terima POST
+export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ message: 'Method Not Allowed' });
     }
@@ -10,18 +9,16 @@ module.exports = async (req, res) => {
     try {
         const { userid, game, product, price } = req.body;
 
-        // --- GANTI DATA INI DENGAN DATA SANDBOX ANDA ---
-        const merchantCode = 'DS27606'; // Contoh: D1234
-        const apiKey = '5c32a1f212281470dd2613ed52b5a370'; // API Key panjang Anda
-        // ----------------------------------------------
-
+        // AMBIL DARI GAMBAR DASHBOARD ANDA
+        const merchantCode = 'DS27606'; // Ganti dengan Merchant Code Anda
+        const apiKey = '5c32a1f212281470dd2613ed52b5a370'; // Ganti dengan API Key Anda
         const merchantOrderId = 'DH-' + Date.now();
         
         // Buat Signature MD5
         const stringToHash = merchantCode + merchantOrderId + price + apiKey;
         const signature = crypto.createHash('md5').update(stringToHash).digest('hex');
 
-        const payload = JSON.stringify({
+        const payload = {
             merchantCode,
             paymentAmount: parseInt(price),
             merchantOrderId,
@@ -31,39 +28,19 @@ module.exports = async (req, res) => {
             callbackUrl: `https://${req.headers.host}/api/callback`,
             returnUrl: `https://${req.headers.host}/`,
             expiryPeriod: 60
-        });
-
-        const options = {
-            hostname: 'passport-sandbox.duitku.com',
-            path: '/webapi/api/merchant/v2/inquiry',
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Content-Length': payload.length
-            }
         };
 
-        const request = https.request(options, (response) => {
-            let responseData = '';
-            response.on('data', (chunk) => { responseData += chunk; });
-            response.on('end', () => {
-                try {
-                    const result = JSON.parse(responseData);
-                    res.status(200).json(result);
-                } catch (e) {
-                    res.status(500).json({ statusMessage: "Respon Duitku bukan JSON" });
-                }
-            });
+        const response = await axios.post('https://passport-sandbox.duitku.com/webapi/api/merchant/v2/inquiry', payload, {
+            headers: { 'Content-Type': 'application/json' }
         });
 
-        request.on('error', (err) => {
-            res.status(500).json({ statusMessage: "Gagal koneksi ke Duitku: " + err.message });
-        });
-
-        request.write(payload);
-        request.end();
+        return res.status(200).json(response.data);
 
     } catch (error) {
-        res.status(500).json({ statusMessage: "Internal Server Error: " + error.message });
+        // Ini akan membantu kita melihat error asli di Tab Network browser
+        return res.status(500).json({ 
+            statusMessage: "Error", 
+            error: error.response ? error.response.data : error.message 
+        });
     }
-};
+}
