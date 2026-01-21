@@ -204,66 +204,43 @@ function selectItem(el, name) {
 
 async function prosesPembayaran() {
     const userid = document.getElementById('userid').value;
-    const btn = document.getElementById('btn-bayar');
-
-    if(!userid || !selectedProduct || !selectedPrice) {
-        alert("Mohon isi ID dan pilih produk!");
+    if(!userid || !selectedPrice) {
+        alert("Lengkapi data!");
         return;
     }
 
-    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin text-2xl"></i> MENYIAPKAN PEMBAYARAN...';
-    btn.disabled = true;
-
     try {
-        // PERBAIKAN DI SINI: Gunakan path relatif tanpa origin untuk Vercel
-        const response = await fetch('/api/pay', {
+        // Gunakan path absolut untuk menghindari error fetch
+        const response = await fetch(window.location.origin + '/api/pay', {
             method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 userid: userid,
                 game: selectedGame,
                 product: selectedProduct,
-                price: selectedPrice 
+                price: selectedPrice
             })
         });
 
-        // Jika backend mengirim error (seperti 500), kita tangkap pesannya
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || errorData.statusMessage || 'Gagal menghubungi server');
-        }
-
         const data = await response.json();
 
-        // Cek apakah Duitku memberikan referensi pembayaran
-        if(data && data.reference) {
+        if (data.reference) {
             checkout.process(data.reference, {
-                successEvent: function(result) { alert("Pembayaran Berhasil!"); location.reload(); },
-                pendingEvent: function(result) { alert("Menunggu Pembayaran..."); },
-                errorEvent: function(result) { alert("Pembayaran Gagal!"); btn.disabled = false; },
-                closeEvent: function(result) { 
-                    btn.disabled = false; 
-                    btn.innerHTML = '<i class="fas fa-credit-card text-2xl"></i> BAYAR SEKARANG';
-                }
+                successEvent: function(result) { alert("Sukses!"); },
+                errorEvent: function(result) { alert("Gagal!"); },
+                closeEvent: function(result) { console.log('customer closed the popup'); }
             });
         } else {
-            alert("Respon Duitku: " + (data.statusMessage || "Gagal mendapatkan token"));
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-credit-card text-2xl"></i> BAYAR SEKARANG';
+            alert("Gagal: " + (data.statusMessage || "Terjadi kesalahan"));
         }
-    } catch (error) {
-        console.error("Detail Error:", error);
-        alert("Sistem Error: " + error.message);
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-credit-card text-2xl"></i> BAYAR SEKARANG';
+    } catch (err) {
+        alert("Sistem Error: " + err.message);
     }
 }
     </script>
 </body>
 </html>
+
 
 
 
