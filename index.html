@@ -215,16 +215,16 @@ async function prosesPembayaran() {
     btn.disabled = true;
 
     try {
-        const response = await fetch('/api/pay', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                userid: userid,
-                game: selectedGame,
-                product: selectedProduct,
-                price: selectedPrice // Kirim angka murni
-            })
-        });
+        const response = await fetch(window.location.origin + '/api/pay', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        userid: userid,
+        game: selectedGame,
+        product: selectedProduct,
+        price: selectedPrice
+    })
+});
 
         // Cek jika response sukses
         if (!response.ok) {
@@ -262,6 +262,7 @@ async function prosesPembayaran() {
     </script>
 </body>
 </html>
+
 
 
 
