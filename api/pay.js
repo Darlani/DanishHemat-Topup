@@ -1,8 +1,8 @@
 const crypto = require('crypto');
-const axios = require('axios');
+const https = require('https');
 
 module.exports = async (req, res) => {
-    // Memastikan hanya POST yang diizinkan
+    // Hanya terima POST
     if (req.method !== 'POST') {
         return res.status(405).json({ message: 'Method Not Allowed' });
     }
@@ -10,43 +10,60 @@ module.exports = async (req, res) => {
     try {
         const { userid, game, product, price } = req.body;
 
-        // --- KONFIGURASI ---
-        const merchantCode = 'DS27606'; // Ganti dengan Merchant Code Anda
-        const apiKey = '5c32a1f212281470dd2613ed52b5a370'; // Ganti dengan API Key Anda
+        // --- GANTI DATA INI DENGAN DATA SANDBOX ANDA ---
+        const merchantCode = 'DS27606'; // Contoh: D1234
+        const apiKey = '5c32a1f212281470dd2613ed52b5a370'; // API Key panjang Anda
+        // ----------------------------------------------
+
         const merchantOrderId = 'DH-' + Date.now();
         
-        // --- SIGNATURE ---
+        // Buat Signature MD5
         const stringToHash = merchantCode + merchantOrderId + price + apiKey;
         const signature = crypto.createHash('md5').update(stringToHash).digest('hex');
 
-        const payload = {
+        const payload = JSON.stringify({
             merchantCode,
             paymentAmount: parseInt(price),
             merchantOrderId,
-            productDetails: `Topup ${game} - ${product}`,
+            productDetails: `Topup ${game} - ${product} (${userid})`,
             email: 'customer@gmail.com',
             signature,
             callbackUrl: `https://${req.headers.host}/api/callback`,
             returnUrl: `https://${req.headers.host}/`,
             expiryPeriod: 60
+        });
+
+        const options = {
+            hostname: 'passport-sandbox.duitku.com',
+            path: '/webapi/api/merchant/v2/inquiry',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': payload.length
+            }
         };
 
-        // --- HIT API DUITKU ---
-        const response = await axios.post('https://passport-sandbox.duitku.com/webapi/api/merchant/v2/inquiry', payload, {
-            headers: { 'Content-Type': 'application/json' },
-            timeout: 15000
+        const request = https.request(options, (response) => {
+            let responseData = '';
+            response.on('data', (chunk) => { responseData += chunk; });
+            response.on('end', () => {
+                try {
+                    const result = JSON.parse(responseData);
+                    res.status(200).json(result);
+                } catch (e) {
+                    res.status(500).json({ statusMessage: "Respon Duitku bukan JSON" });
+                }
+            });
         });
 
-        // Kirim hasil ke frontend
-        return res.status(200).json(response.data);
+        request.on('error', (err) => {
+            res.status(500).json({ statusMessage: "Gagal koneksi ke Duitku: " + err.message });
+        });
+
+        request.write(payload);
+        request.end();
 
     } catch (error) {
-        console.error("Backend Error:", error.message);
-        
-        // Kirim detail error agar kita bisa baca di browser
-        return res.status(500).json({ 
-            statusMessage: "Error Backend", 
-            details: error.response ? error.response.data : error.message 
-        });
+        res.status(500).json({ statusMessage: "Internal Server Error: " + error.message });
     }
 };
