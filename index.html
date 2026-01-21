@@ -204,14 +204,18 @@ function selectItem(el, name) {
 
 async function prosesPembayaran() {
     const userid = document.getElementById('userid').value;
+    const btn = document.getElementById('btn-bayar');
+
     if(!userid || !selectedPrice) {
-        alert("Lengkapi data!");
+        alert("Mohon isi ID dan pilih produk!");
         return;
     }
 
+    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> MENYIAPKAN PEMBAYARAN...';
+    btn.disabled = true;
+
     try {
-        // Gunakan path absolut untuk menghindari error fetch
-        const response = await fetch(window.location.origin + '/api/pay', {
+        const response = await fetch('/api/pay', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -224,22 +228,31 @@ async function prosesPembayaran() {
 
         const data = await response.json();
 
-        if (data.reference) {
+        if (data && data.reference) {
+            // Memanggil Popup Duitku
             checkout.process(data.reference, {
-                successEvent: function(result) { alert("Sukses!"); },
-                errorEvent: function(result) { alert("Gagal!"); },
-                closeEvent: function(result) { console.log('customer closed the popup'); }
+                successEvent: function(result) { alert("Sukses!"); location.reload(); },
+                errorEvent: function(result) { alert("Gagal!"); btn.disabled = false; },
+                closeEvent: function(result) { 
+                    btn.disabled = false; 
+                    btn.innerHTML = '<i class="fas fa-credit-card"></i> BAYAR SEKARANG';
+                }
             });
         } else {
-            alert("Gagal: " + (data.statusMessage || "Terjadi kesalahan"));
+            alert("Error: " + (data.statusMessage || "Gagal mendapatkan token"));
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-credit-card"></i> BAYAR SEKARANG';
         }
     } catch (err) {
         alert("Sistem Error: " + err.message);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-credit-card"></i> BAYAR SEKARANG';
     }
 }
     </script>
 </body>
 </html>
+
 
 
 
