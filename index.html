@@ -215,30 +215,33 @@ async function prosesPembayaran() {
     btn.disabled = true;
 
     try {
-        const response = await fetch(window.location.origin + '/api/pay', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-        userid: userid,
-        game: selectedGame,
-        product: selectedProduct,
-        price: selectedPrice
-    })
-});
+        // PERBAIKAN DI SINI: Gunakan path relatif tanpa origin untuk Vercel
+        const response = await fetch('/api/pay', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                userid: userid,
+                game: selectedGame,
+                product: selectedProduct,
+                price: selectedPrice 
+            })
+        });
 
-        // Cek jika response sukses
+        // Jika backend mengirim error (seperti 500), kita tangkap pesannya
         if (!response.ok) {
-            throw new Error('Gagal menghubungi server backend');
+            const errorData = await response.json();
+            throw new Error(errorData.error || errorData.statusMessage || 'Gagal menghubungi server');
         }
 
         const data = await response.json();
 
+        // Cek apakah Duitku memberikan referensi pembayaran
         if(data && data.reference) {
             checkout.process(data.reference, {
-                successEvent: function(result) {
-                    alert("Pembayaran Berhasil!");
-                    location.reload();
-                },
+                successEvent: function(result) { alert("Pembayaran Berhasil!"); location.reload(); },
                 pendingEvent: function(result) { alert("Menunggu Pembayaran..."); },
                 errorEvent: function(result) { alert("Pembayaran Gagal!"); btn.disabled = false; },
                 closeEvent: function(result) { 
@@ -247,13 +250,12 @@ async function prosesPembayaran() {
                 }
             });
         } else {
-            // Jika data.reference undefined, tampilkan pesan error dari Duitku
-            alert("Error Duitku: " + (data.statusMessage || "Gagal mendapatkan token"));
+            alert("Respon Duitku: " + (data.statusMessage || "Gagal mendapatkan token"));
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-credit-card text-2xl"></i> BAYAR SEKARANG';
         }
     } catch (error) {
-        console.error(error);
+        console.error("Detail Error:", error);
         alert("Sistem Error: " + error.message);
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-credit-card text-2xl"></i> BAYAR SEKARANG';
@@ -262,6 +264,7 @@ async function prosesPembayaran() {
     </script>
 </body>
 </html>
+
 
 
 
