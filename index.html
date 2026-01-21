@@ -197,9 +197,11 @@ function selectItem(el, name) {
     
     selectedProduct = name;
     
-    // Ambil hanya angka dari string harga (misal Rp20.000 -> 20000)
-    const rawPrice = name.split('Rp')[1];
-    selectedPrice = parseInt(rawPrice.replace(/\./g, '').trim());
+    // Perbaikan pengambilan angka harga agar lebih akurat
+    const match = name.match(/Rp\s?([\d.]+)/);
+    if (match) {
+        selectedPrice = parseInt(match[1].replace(/\./g, ''));
+    }
 }
 
 async function prosesPembayaran() {
@@ -215,6 +217,7 @@ async function prosesPembayaran() {
     btn.disabled = true;
 
     try {
+        // Menggunakan path relatif agar otomatis menyesuaikan domain Vercel
         const response = await fetch('/api/pay', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -226,32 +229,38 @@ async function prosesPembayaran() {
             })
         });
 
+        // Menangani jika respon bukan JSON (misal error 500 mentah)
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error("Server bermasalah (500). Cek Log Vercel.");
+        }
+
         const data = await response.json();
 
         if (data && data.reference) {
-            // Memanggil Popup Duitku
             checkout.process(data.reference, {
-                successEvent: function(result) { alert("Sukses!"); location.reload(); },
-                errorEvent: function(result) { alert("Gagal!"); btn.disabled = false; },
+                successEvent: function(result) { alert("Pembayaran Berhasil!"); location.reload(); },
+                errorEvent: function(result) { alert("Pembayaran Gagal!"); btn.disabled = false; },
                 closeEvent: function(result) { 
                     btn.disabled = false; 
-                    btn.innerHTML = '<i class="fas fa-credit-card"></i> BAYAR SEKARANG';
+                    btn.innerHTML = '<i class="fas fa-credit-card text-2xl"></i> BAYAR SEKARANG';
                 }
             });
         } else {
-            alert("Error: " + (data.statusMessage || "Gagal mendapatkan token"));
+            alert("Duitku: " + (data.statusMessage || "Gagal mendapatkan token"));
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-credit-card"></i> BAYAR SEKARANG';
+            btn.innerHTML = '<i class="fas fa-credit-card text-2xl"></i> BAYAR SEKARANG';
         }
     } catch (err) {
         alert("Sistem Error: " + err.message);
         btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-credit-card"></i> BAYAR SEKARANG';
+        btn.innerHTML = '<i class="fas fa-credit-card text-2xl"></i> BAYAR SEKARANG';
     }
 }
     </script>
 </body>
 </html>
+
 
 
 
