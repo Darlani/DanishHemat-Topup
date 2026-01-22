@@ -1,4 +1,3 @@
-const crypto = require('crypto');
 const https = require('https');
 
 async function readBody(req) {
@@ -9,6 +8,7 @@ async function readBody(req) {
 }
 
 module.exports = async (req, res) => {
+    // Header CORS agar tidak diblokir browser
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -19,38 +19,36 @@ module.exports = async (req, res) => {
         const body = await readBody(req);
         const { userid, game, product, price } = body;
 
-        if (!price) {
-            return res.status(400).json({ statusMessage: "Harga tidak ditemukan" });
-        }
-
-        // KONFIGURASI SANDBOX
-        const merchantCode = 'DS27606'; 
-        const apiKey = '5c32a1f212281470dd2613ed52b5a370';
-        const merchantOrderId = 'DH-' + Date.now();
-        const paymentAmount = parseInt(price);
-
-        // Signature MD5 Sandbox: merchantCode + merchantOrderId + paymentAmount + apiKey
-        const stringToHash = merchantCode + merchantOrderId + paymentAmount + apiKey;
-        const signature = crypto.createHash('md5').update(stringToHash).digest('hex');
-
+        // --- KONFIGURASI MIDTRANS ---
+        // Ganti teks di bawah ini dengan Server Key Sandbox Anda
+        const serverKey = 'Mid-server-595S3Ppw3df5Oe1nY2i2kOdx'; 
+        const authBase64 = Buffer.from(serverKey + ':').toString('base64');
+        
         const payload = JSON.stringify({
-            merchantCode,
-            paymentAmount,
-            merchantOrderId,
-            productDetails: `Topup ${game || 'Game'} - ${product || 'Produk'} (${userid || 'No ID'})`,
-            email: 'customer@gmail.com',
-            signature,
-            callbackUrl: `https://${req.headers.host}/api/callback`,
-            returnUrl: `https://${req.headers.host}/`,
-            expiryPeriod: 60
+            transaction_details: {
+                order_id: 'ORDER-' + Date.now(), // ID Unik transaksi
+                gross_amount: parseInt(price)    // Total nominal (Integer)
+            },
+            item_details: [{
+                id: product,
+                price: parseInt(price),
+                quantity: 1,
+                name: `${game} - ${product} (${userid})`
+            }],
+            customer_details: {
+                first_name: userid,
+                email: "customer@example.com"
+            }
         });
 
         const options = {
-            hostname: 'passport-sandbox.duitku.com',
-            path: '/webapi/api/merchant/v2/inquiry',
+            hostname: 'app.sandbox.midtrans.com',
+            path: '/snap/v1/transactions',
             method: 'POST',
             headers: {
+                'Accept': 'application/json',
                 'Content-Type': 'application/json',
+                'Authorization': `Basic ${authBase64}`,
                 'Content-Length': Buffer.byteLength(payload)
             }
         };
@@ -60,19 +58,18 @@ module.exports = async (req, res) => {
             response.on('data', (chunk) => resData += chunk);
             response.on('end', () => {
                 try {
-                    const result = JSON.parse(resData);
-                    res.status(200).json(result);
+                    res.status(200).json(JSON.parse(resData));
                 } catch (e) {
-                    res.status(500).json({ statusMessage: "Respon server Duitku tidak valid", details: resData });
+                    res.status(500).json({ error: "Respon Midtrans bukan JSON", details: resData });
                 }
             });
         });
 
-        request.on('error', (e) => res.status(500).json({ statusMessage: e.message }));
+        request.on('error', (e) => res.status(500).json({ error: e.message }));
         request.write(payload);
         request.end();
 
     } catch (error) {
-        res.status(500).json({ statusMessage: "Internal Server Error", error: error.message });
+        res.status(500).json({ error: "Internal Server Error", details: error.message });
     }
 };
