@@ -1,7 +1,6 @@
 const https = require('https');
 
 module.exports = async (req, res) => {
-    // Ambil orderid dari URL: /api/check-status?orderid=XXX
     const { orderid } = req.query;
 
     if (!orderid) {
@@ -12,7 +11,7 @@ module.exports = async (req, res) => {
     const authBase64 = Buffer.from(serverKey + ':').toString('base64');
 
     const options = {
-        hostname: 'app.sandbox.midtrans.com', // Gunakan 'api.midtrans.com' jika sudah produksi
+        hostname: 'app.sandbox.midtrans.com',
         path: `/v2/${orderid}/status`,
         method: 'GET',
         headers: {
@@ -27,9 +26,12 @@ module.exports = async (req, res) => {
         response.on('data', (chunk) => resData += chunk);
         response.on('end', () => {
             try {
-                res.status(200).json(JSON.parse(resData));
+                const jsonRes = JSON.parse(resData);
+                // Jika Midtrans kasih status_code 404, kita kirim apa adanya agar tahu pesannya
+                res.status(200).json(jsonRes);
             } catch (e) {
-                res.status(500).json({ error: "Gagal memproses data Midtrans" });
+                // Jika bukan JSON, tampilkan teks aslinya untuk debug
+                res.status(500).json({ error: "Respon bukan JSON", raw: resData });
             }
         });
     });
