@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lacak Pesanan - DanishHemat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-[#0f172a] text-white font-sans">
+    <div class="container mx-auto px-4 py-10 max-w-md">
+        <a href="index.html" class="text-sm text-gray-400 hover:text-yellow-400 mb-6 inline-block">
+            <i class="fa-solid fa-arrow-left"></i> Kembali ke Home
+        </a>
+
+        <h1 class="text-2xl font-bold text-center mb-6 text-yellow-400">Lacak Pesanan</h1>
+        
+        <div class="bg-[#1e293b] p-6 rounded-2xl shadow-2xl border border-gray-700">
+            <label class="block text-sm font-medium mb-2 text-gray-300">Masukkan Order ID</label>
+            <input type="text" id="orderid" placeholder="Contoh: ORDER-1737522300" 
+                   class="w-full p-3 rounded-lg bg-[#0f172a] border border-gray-600 mb-4 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all text-white">
+            
+            <button onclick="cekStatus()" 
+                    class="w-full bg-yellow-400 text-black font-extrabold py-3 rounded-lg hover:bg-yellow-500 transition-all active:scale-95">
+                CARI PESANAN
+            </button>
+        </div>
+
+        <div id="hasil" class="mt-6 hidden p-6 rounded-2xl bg-[#1e293b] border border-gray-700 shadow-xl">
+            </div>
+    </div>
+
+    <script>
+        async function cekStatus() {
+            const orderid = document.getElementById('orderid').value.trim();
+            const hasilDiv = document.getElementById('hasil');
+            
+            if(!orderid) return alert("Silakan masukkan Order ID Anda!");
+
+            hasilDiv.innerHTML = `<div class="text-center"><i class="fa-solid fa-spinner fa-spin"></i> Mencari data...</div>`;
+            hasilDiv.classList.remove('hidden');
+
+            try {
+                // Memanggil API internal kita
+                const response = await fetch(`/api/check-status?orderid=${orderid}`);
+                const data = await response.json();
+
+                if(data.status_code === "404" || !data.transaction_status) {
+                    hasilDiv.innerHTML = `
+                        <div class="text-center text-red-400">
+                            <i class="fa-solid fa-circle-xmark text-3xl mb-2"></i>
+                            <p>Order ID tidak ditemukan.</p>
+                        </div>`;
+                } else {
+                    let statusColor = data.transaction_status === 'settlement' ? 'text-green-400' : 'text-yellow-400';
+                    let statusText = data.transaction_status === 'settlement' ? 'LUNAS / BERHASIL' : data.transaction_status.toUpperCase();
+
+                    hasilDiv.innerHTML = `
+                        <div class="space-y-3">
+                            <div class="border-b border-gray-600 pb-2">
+                                <p class="text-xs text-gray-400">Status Transaksi</p>
+                                <p class="font-bold ${statusColor}">${statusText}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400">Metode Pembayaran</p>
+                                <p class="font-medium">${data.payment_type.replace(/_/g, ' ')}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400">Total Bayar</p>
+                                <p class="font-medium text-yellow-400">Rp${parseInt(data.gross_amount).toLocaleString('id-ID')}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400">Waktu Transaksi</p>
+                                <p class="text-sm text-gray-300">${data.transaction_time}</p>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                hasilDiv.innerHTML = `<p class="text-center text-red-400">Gagal mengambil data. Coba lagi nanti.</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
