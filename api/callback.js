@@ -27,49 +27,45 @@ module.exports = async (req, res) => {
         }
 
         if (transactionStatus === 'settlement' || transactionStatus === 'capture') {
-            const botToken = '8469153308:AAHLKFcEmXjOpknq7yIQLt2NqrEhpzh8J1w';
-            const chatId = '5225711089';
-            
-            const user_id_game = notification.custom_field1 || "Tidak Ada ID";
-            const order_id_fix = notification.order_id || "Tanpa ID";
-            const nominal = notification.gross_amount || "0";
+    const botToken = '8469153308:AAHLKFcEmXjOpknq7yIQLt2NqrEhpzh8J1w';
+    const chatId = '5225711089';
+    
+    // AMBIL DARI CUSTOM FIELDS
+    const user_id_game = notification.custom_field1 || "Tidak Ada ID";
+    const nama_produk = notification.custom_field2 || "Produk Tidak Diketahui";
+    const order_id_fix = notification.order_id || "Tanpa ID";
+    const nominal = notification.gross_amount || "0";
 
-            // --- TAMBAHAN: MENGAMBIL DETAIL GAME & PRODUK ---
-            // Midtrans menyimpan detail barang di dalam array item_details
-            const item = notification.item_details && notification.item_details[0] 
-                         ? notification.item_details[0].name 
-                         : "Produk Tidak Diketahui";
+    const sekarang = new Date();
+    const opsiWaktu = { 
+        timeZone: 'Asia/Jakarta', 
+        day: '2-digit', 
+        month: 'long', 
+        year: 'numeric', 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit' 
+    };
+    const waktuWIB = sekarang.toLocaleString('id-ID', opsiWaktu);
 
-            const sekarang = new Date();
-            const opsiWaktu = { 
-                timeZone: 'Asia/Jakarta', 
-                day: '2-digit', 
-                month: 'long', 
-                year: 'numeric', 
-                hour: '2-digit', 
-                minute: '2-digit', 
-                second: '2-digit' 
-            };
-            const waktuWIB = sekarang.toLocaleString('id-ID', opsiWaktu);
+    const pesan = `✅ *PEMBAYARAN LUNAS*\n` +
+                  `📅 ${waktuWIB} WIB\n\n` +
+                  `🎮 *Game/Produk:* ${nama_produk}\n` +
+                  `👤 *User ID Game:* ${user_id_game}\n` +
+                  `💰 *Total:* Rp${parseInt(nominal).toLocaleString('id-ID')}\n` +
+                  `🆔 *Order ID:* ${order_id_fix}\n` +
+                  `📱 *Status:* ${transactionStatus.toUpperCase()}`;
 
-            const pesan = `✅ *PEMBAYARAN LUNAS*\n` +
-                          `📅 ${waktuWIB} WIB\n\n` +
-                          `🎮 *Game/Produk:* ${item}\n` +
-                          `👤 *User ID Game:* ${user_id_game}\n` +
-                          `💰 *Total:* Rp${parseInt(nominal).toLocaleString('id-ID')}\n` +
-                          `🆔 *Order ID:* ${order_id_fix}\n` +
-                          `📱 *Status:* ${transactionStatus.toUpperCase()}`;
-
-            await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: chatId,
-                    text: pesan,
-                    parse_mode: 'Markdown'
-                })
-            });
-        }
+    await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            chat_id: chatId,
+            text: pesan,
+            parse_mode: 'Markdown'
+        })
+    });
+}
 
         res.status(200).json({ status: 'OK' });
 
