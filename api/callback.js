@@ -37,12 +37,13 @@ module.exports = async (req, res) => {
     const gross_amount_fix = notification.gross_amount || "0";
     
     // Mengambil User ID yang kita simpan di customer_details.first_name saat api/pay.js
-    const user_id_game = notification.customer_details ? notification.customer_details.first_name : "Tidak Ada ID";
+    const user_id_game = notification.custom_field1 || "Tidak Ada ID";
+    const order_id_fix = notification.order_id || "Tanpa ID";
 
     const pesan = `✅ *PEMBAYARAN LUNAS*\n\n` +
                   `🆔 *Order ID:* ${order_id_fix}\n` +
                   `👤 *User ID Game:* ${user_id_game}\n` +
-                  `💰 *Total:* Rp${parseInt(gross_amount_fix).toLocaleString('id-ID')}\n` +
+                  `💰 *Total:* Rp${parseInt(notification.gross_amount).toLocaleString('id-ID')}\n` +
                   `📱 *Status:* ${transactionStatus.toUpperCase()}`;
 
     await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
