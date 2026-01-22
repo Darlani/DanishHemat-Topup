@@ -29,25 +29,32 @@ module.exports = async (req, res) => {
 
         // 2. Logika Notifikasi Telegram saat Lunas
         if (transactionStatus === 'settlement' || transactionStatus === 'capture') {
-            const botToken = '8469153308:AAHLKFcEmXjOpknq7yIQLt2NqrEhpzh8J1w'; // GANTI DENGAN TOKEN DARI BOTFATHER
-            const chatId = '5225711089';     // GANTI DENGAN ANGKA DARI USERINFOBOT
-            
-            const pesan = `✅ *PEMBAYARAN LUNAS*\n\n` +
-                          `🆔 *Order ID:* ${orderId}\n` +
-                          `👤 *User ID:* ${notification.customer_details.first_name}\n` +
-                          `💰 *Total:* Rp${parseInt(grossAmount).toLocaleString('id-ID')}\n` +
-                          `📱 *Status:* ${transactionStatus.toUpperCase()}`;
+    const botToken = '8469153308:AAHLKFcEmXjOpknq7yIQLt2NqrEhpzh8J1w'; // Pastikan tetap terisi
+    const chatId = '5225711089';     // Pastikan tetap terisi
+    
+    // MENGAMBIL DATA DARI NOTIFIKASI MIDTRANS
+    const order_id_fix = notification.order_id || "Tidak Terdeteksi";
+    const gross_amount_fix = notification.gross_amount || "0";
+    
+    // Mengambil User ID yang kita simpan di customer_details.first_name saat api/pay.js
+    const user_id_game = notification.customer_details ? notification.customer_details.first_name : "Tidak Ada ID";
 
-            await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: chatId,
-                    text: pesan,
-                    parse_mode: 'Markdown'
-                })
-            });
-        }
+    const pesan = `✅ *PEMBAYARAN LUNAS*\n\n` +
+                  `🆔 *Order ID:* ${order_id_fix}\n` +
+                  `👤 *User ID Game:* ${user_id_game}\n` +
+                  `💰 *Total:* Rp${parseInt(gross_amount_fix).toLocaleString('id-ID')}\n` +
+                  `📱 *Status:* ${transactionStatus.toUpperCase()}`;
+
+    await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            chat_id: chatId,
+            text: pesan,
+            parse_mode: 'Markdown'
+        })
+    });
+}
 
         res.status(200).json({ status: 'OK' });
 
