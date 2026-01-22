@@ -13,15 +13,13 @@ module.exports = async (req, res) => {
     try {
         const notification = await readBody(req);
         
-        // --- KONFIGURASI ---
-        const serverKey = 'MASUKKAN_SERVER_KEY_SANDBOX_ANDA'; 
+        const serverKey = 'Mid-server-595S3Ppw3df5Oe1nY2i2kOdx'; // GANTI DENGAN SERVER KEY ANDA
         const orderId = notification.order_id;
         const statusCode = notification.status_code;
         const grossAmount = notification.gross_amount;
         const transactionStatus = notification.transaction_status;
-        const fraudStatus = notification.fraud_status;
 
-        // 1. Validasi Signature (Keamanan agar tidak bisa dipalsukan orang lain)
+        // 1. Validasi Signature
         const signatureString = orderId + statusCode + grossAmount + serverKey;
         const localSignature = crypto.createHash('sha512').update(signatureString).digest('hex');
 
@@ -29,24 +27,26 @@ module.exports = async (req, res) => {
             return res.status(401).json({ message: 'Invalid Signature' });
         }
 
-        // 2. Logika Pemrosesan Status Pembayaran
-        console.log(`Transaksi ${orderId}: Status ${transactionStatus}`);
+        // 2. Logika Notifikasi Telegram saat Lunas
+        if (transactionStatus === 'settlement' || transactionStatus === 'capture') {
+            const botToken = '8469153308:AAHLKFcEmXjOpknq7yIQLt2NqrEhpzh8J1w'; // GANTI DENGAN TOKEN DARI BOTFATHER
+            const chatId = '5225711089';     // GANTI DENGAN ANGKA DARI USERINFOBOT
+            
+            const pesan = `✅ *PEMBAYARAN LUNAS*\n\n` +
+                          `🆔 *Order ID:* ${orderId}\n` +
+                          `👤 *User ID:* ${notification.customer_details.first_name}\n` +
+                          `💰 *Total:* Rp${parseInt(grossAmount).toLocaleString('id-ID')}\n` +
+                          `📱 *Status:* ${transactionStatus.toUpperCase()}`;
 
-        if (transactionStatus === 'capture' || transactionStatus === 'settlement') {
-            if (fraudStatus === 'challenge') {
-                // Pembayaran dicurigai fraud, perlu dicek manual
-                console.log("Status: Challenge");
-            } else if (fraudStatus === 'accept') {
-                // PEMBAYARAN BERHASIL (Lunas)
-                console.log("Status: Berhasil / Lunas");
-                // DI SINI: Tempat Anda menaruh logika kirim Diamond otomatis
-            }
-        } else if (transactionStatus === 'cancel' || transactionStatus === 'deny' || transactionStatus === 'expire') {
-            // Pembayaran gagal atau kadaluarsa
-            console.log("Status: Gagal");
-        } else if (transactionStatus === 'pending') {
-            // Menunggu pembayaran
-            console.log("Status: Pending");
+            await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: pesan,
+                    parse_mode: 'Markdown'
+                })
+            });
         }
 
         res.status(200).json({ status: 'OK' });
