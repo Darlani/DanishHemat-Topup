@@ -13,7 +13,8 @@ module.exports = async (req, res) => {
     try {
         const notification = await readBody(req);
         
-        const serverKey = 'Mid-server-595S3Ppw3df5Oe1nY2i2kOdx'; // GANTI DENGAN SERVER KEY ANDA
+        // Perhatian: Pastikan Server Key ini sesuai dengan Environment (Sandbox/Production)
+        const serverKey = 'Mid-server-595S3Ppw3df5Oe1nY2i2kOdx'; 
         const orderId = notification.order_id;
         const statusCode = notification.status_code;
         const grossAmount = notification.gross_amount;
@@ -29,37 +30,36 @@ module.exports = async (req, res) => {
 
         // 2. Logika Notifikasi Telegram saat Lunas
         if (transactionStatus === 'settlement' || transactionStatus === 'capture') {
-    const botToken = '8469153308:AAHLKFcEmXjOpknq7yIQLt2NqrEhpzh8J1w'; // Pastikan tetap terisi
-    const chatId = '5225711089';     // Pastikan tetap terisi
-    
-    // MENGAMBIL DATA DARI NOTIFIKASI MIDTRANS
-    const order_id_fix = notification.order_id || "Tidak Terdeteksi";
-    const gross_amount_fix = notification.gross_amount || "0";
-    
-    // Mengambil User ID yang kita simpan di customer_details.first_name saat api/pay.js
-    const user_id_game = notification.custom_field1 || "Tidak Ada ID";
-    const order_id_fix = notification.order_id || "Tanpa ID";
+            const botToken = '8469153308:AAHLKFcEmXjOpknq7yIQLt2NqrEhpzh8J1w';
+            const chatId = '5225711089';
+            
+            // Perbaikan: Variabel diambil sekali saja agar tidak error
+            const user_id_game = notification.custom_field1 || "Tidak Ada ID";
+            const order_id_fix = notification.order_id || "Tanpa ID";
+            const nominal = notification.gross_amount || "0";
 
-    const pesan = `✅ *PEMBAYARAN LUNAS*\n\n` +
-                  `🆔 *Order ID:* ${order_id_fix}\n` +
-                  `👤 *User ID Game:* ${user_id_game}\n` +
-                  `💰 *Total:* Rp${parseInt(notification.gross_amount).toLocaleString('id-ID')}\n` +
-                  `📱 *Status:* ${transactionStatus.toUpperCase()}`;
+            const pesan = `✅ *PEMBAYARAN LUNAS*\n\n` +
+                          `🆔 *Order ID:* ${order_id_fix}\n` +
+                          `👤 *User ID Game:* ${user_id_game}\n` +
+                          `💰 *Total:* Rp${parseInt(nominal).toLocaleString('id-ID')}\n` +
+                          `📱 *Status:* ${transactionStatus.toUpperCase()}`;
 
-    await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            chat_id: chatId,
-            text: pesan,
-            parse_mode: 'Markdown'
-        })
-    });
-}
+            // Menggunakan fetch bawaan Node.js (Vercel mendukung ini)
+            await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: pesan,
+                    parse_mode: 'Markdown'
+                })
+            });
+        }
 
         res.status(200).json({ status: 'OK' });
 
     } catch (error) {
+        // Jika ada error, vercel logs akan mencatat ini
         res.status(500).json({ error: error.message });
     }
 };
