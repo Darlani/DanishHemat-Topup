@@ -38,7 +38,7 @@ module.exports = async (req, res) => {
             }],
             customer_details: {
                 first_name: userid,
-                email: "customer@example.com"
+                email: "customer@gmail.com"
             }
         });
 
