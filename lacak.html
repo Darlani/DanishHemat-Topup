@@ -77,8 +77,13 @@
                     `;
                 }
             } catch (error) {
-                hasilDiv.innerHTML = `<p class="text-center text-red-400">Gagal mengambil data. Coba lagi nanti.</p>`;
-            }
+    console.error(error);
+    hasilDiv.innerHTML = `
+        <p class="text-center text-red-400">
+            Terjadi kesalahan teknis.<br>
+            <span class="text-xs text-gray-500">${error.message}</span>
+        </p>`;
+}
         }
     </script>
 </body>
