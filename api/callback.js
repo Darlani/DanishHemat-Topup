@@ -20,7 +20,7 @@ module.exports = async (req, res) => {
     } = body;
 
     // 🔐 Validasi signature dari Duitku
-    const apiKey = process.env.DUITKU_API_KEY;
+    const apiKey = process.env.5c32a1f212281470dd2613ed52b5a370;
     const expectedSignature = crypto
       .createHash('md5')
       .update(merchantCode + amount + merchantOrderId + apiKey)
