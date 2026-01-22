@@ -6,8 +6,8 @@ async function readBody(req) {
     const data = Buffer.concat(buffers).toString();
     try { return JSON.parse(data); } catch (e) { return {}; }
 }
-
 module.exports = async (req, res) => {
+    // 1. CORS Headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -15,16 +15,34 @@ module.exports = async (req, res) => {
     if (req.method === 'OPTIONS') return res.status(200).end();
 
     try {
-        const body = await readBody(req);
+        // 2. Cara Aman Membaca Body di Vercel
+        let body = {};
+        if (typeof req.body === 'string') {
+            body = JSON.parse(req.body);
+        } else if (req.body) {
+            body = req.body;
+        } else {
+            // Jika req.body benar-benar kosong, kita baca manual
+            const buffers = [];
+            for await (const chunk of req) { buffers.push(chunk); }
+            const rawData = Buffer.concat(buffers).toString();
+            body = JSON.parse(rawData || '{}');
+        }
+
         const { userid, game, product, price } = body;
+
+        // Validasi input
+        if (!userid || !price) {
+            return res.status(400).json({ error: "Data tidak lengkap" });
+        }
 
         const serverKey = 'Mid-server-595S3Ppw3df5Oe1nY2i2kOdx'; 
         const authBase64 = Buffer.from(serverKey + ':').toString('base64');
         
-        // Gunakan format yang sedikit lebih pendek tapi tetap unik
+        // Buat Order ID unik
         const orderId = 'DS-' + Math.floor(Date.now() / 1000); 
 
-        const payload = JSON.stringify({
+        const payload = {
             transaction_details: {
                 order_id: orderId,
                 gross_amount: parseInt(price)
@@ -32,46 +50,37 @@ module.exports = async (req, res) => {
             custom_field1: userid,
             custom_field2: `${game} - ${product}`,
             item_details: [{
-                id: product.substring(0, 50),
+                id: String(product).substring(0, 50),
                 price: parseInt(price),
                 quantity: 1,
-                name: `${game.substring(0, 15)} ${product.substring(0, 30)}`.trim()
+                name: `${game} ${product}`.substring(0, 50).trim()
             }],
             customer_details: {
                 first_name: userid,
                 email: "customer@gmail.com"
             }
-        });
+        };
 
-        const options = {
-            hostname: 'app.sandbox.midtrans.com',
-            path: '/snap/v1/transactions',
+        const response = await fetch('https://app.sandbox.midtrans.com/snap/v1/transactions', {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
-                'Authorization': `Basic ${authBase64}`,
-                'Content-Length': Buffer.byteLength(payload)
-            }
-        };
-
-        const request = https.request(options, (response) => {
-            let resData = '';
-            response.on('data', (chunk) => resData += chunk);
-            response.on('end', () => {
-                try {
-                    res.status(200).json(JSON.parse(resData));
-                } catch (e) {
-                    res.status(500).json({ error: "Respon Midtrans bukan JSON", details: resData });
-                }
-            });
+                'Authorization': `Basic ${authBase64}`
+            },
+            body: JSON.stringify(payload)
         });
 
-        request.on('error', (e) => res.status(500).json({ error: e.message }));
-        request.write(payload);
-        request.end();
+        const data = await response.json();
+        
+        // Kirim respon balik ke frontend
+        return res.status(200).json({ ...data, order_id: orderId });
 
     } catch (error) {
-        res.status(500).json({ error: "Internal Server Error", details: error.message });
+        console.error("Pay Error:", error);
+        return res.status(500).json({ 
+            error: "Internal Server Error", 
+            details: error.message 
+        });
     }
 };
