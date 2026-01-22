@@ -14,7 +14,9 @@
         .bg-gradient-custom { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
         .text-gradient { background: linear-gradient(to right, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     </style>
-    <script src="https://app-sandbox.duitku.com/lib/js/duitku.js"></script>
+    <script type="text/javascript"
+  src="https://app.sandbox.midtrans.com/snap/snap.js"
+  data-client-key="Mid-client-Mmnq--7bqp79w_kJ"></script>
 </head>
 <body class="text-slate-200">
 
@@ -213,7 +215,7 @@ async function prosesPembayaran() {
         return;
     }
 
-    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> MENYIAPKAN...';
+    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> MENYIAPKAN PEMBAYARAN...';
     btn.disabled = true;
 
     try {
@@ -230,22 +232,24 @@ async function prosesPembayaran() {
 
         const data = await response.json();
 
-        if (response.ok && data.reference) {
-            checkout.process(data.reference, {
-                successEvent: function(result) { alert("Sukses!"); location.reload(); },
-                errorEvent: function(result) { alert("Gagal!"); btn.disabled = false; },
-                closeEvent: function(result) { 
+        // Midtrans memberikan 'token', bukan 'reference'
+        if (data.token) {
+            window.snap.pay(data.token, {
+                onSuccess: function(result) { alert("Pembayaran Berhasil!"); location.reload(); },
+                onPending: function(result) { alert("Menunggu Pembayaran..."); },
+                onError: function(result) { alert("Pembayaran Gagal!"); btn.disabled = false; },
+                onClose: function(result) { 
                     btn.disabled = false; 
-                    btn.innerHTML = 'BAYAR SEKARANG';
+                    btn.innerHTML = '<i class="fas fa-credit-card text-2xl"></i> BAYAR SEKARANG';
                 }
             });
         } else {
-            alert("Error: " + (data.error || data.statusMessage || "Gagal Koneksi"));
+            alert("Error Midtrans: " + (data.error_messages ? data.error_messages[0] : "Gagal Token"));
             btn.disabled = false;
             btn.innerHTML = 'BAYAR SEKARANG';
         }
     } catch (err) {
-        alert("Koneksi gagal: " + err.message);
+        alert("Sistem Error: " + err.message);
         btn.disabled = false;
         btn.innerHTML = 'BAYAR SEKARANG';
     }
@@ -253,3 +257,4 @@ async function prosesPembayaran() {
     </script>
 </body>
 </html>
+
