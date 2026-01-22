@@ -11,15 +11,21 @@ module.exports = async (req, res) => {
 
     try {
         const { userid, game, product, price } = req.body;
-
-        const merchantCode = 'DS27606'; 
-        const apiKey = '5c32a1f212281470dd2613ed52b5a370'; 
-        const merchantOrderId = 'DH-' + Date.now();
         
+        // Validasi input agar tidak error saat diproses
+        if (!userid || !price) {
+            return res.status(400).json({ error: "Data tidak lengkap" });
+        }
+
+        const merchantCode = 'DS27606';
+        const apiKey = '5c32a1f212281470dd2613ed52b5a370';
+        const merchantOrderId = 'DH-' + Date.now();
+
         // Buat signature MD5
         const stringToHash = merchantCode + merchantOrderId + price.toString() + apiKey;
         const signature = crypto.createHash('md5').update(stringToHash).digest('hex');
 
+        // PERBAIKAN: Menggunakan backtick (`) untuk template literal pada productDetails
         const payload = JSON.stringify({
             merchantCode,
             paymentAmount: parseInt(price),
@@ -38,7 +44,7 @@ module.exports = async (req, res) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Content-Length': payload.length
+                'Content-Length': Buffer.byteLength(payload) // Lebih aman menggunakan Buffer.byteLength
             }
         };
 
@@ -47,7 +53,8 @@ module.exports = async (req, res) => {
             response.on('data', (chunk) => body += chunk);
             response.on('end', () => {
                 try {
-                    res.status(200).json(JSON.parse(body));
+                    const jsonRes = JSON.parse(body);
+                    res.status(200).json(jsonRes);
                 } catch (e) {
                     res.status(500).json({ error: "Respon Duitku bukan JSON", details: body });
                 }
@@ -55,7 +62,7 @@ module.exports = async (req, res) => {
         });
 
         request.on('error', (error) => {
-            res.status(500).json({ error: "Gagal ke Duitku", details: error.message });
+            res.status(500).json({ error: "Gagal menyambung ke server Duitku", details: error.message });
         });
 
         request.write(payload);
