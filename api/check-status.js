@@ -5,6 +5,7 @@ module.exports = async (req, res) => {
         return res.status(400).json({ error: "Order ID diperlukan" });
     }
 
+    // PASTIKAN: Tidak ada spasi di awal/akhir kunci ini
     const serverKey = 'Mid-server-595S3Ppw3df5Oe1nY2i2kOdx';
     const authBase64 = Buffer.from(serverKey + ':').toString('base64');
 
@@ -13,19 +14,26 @@ module.exports = async (req, res) => {
             method: 'GET',
             headers: {
                 'Authorization': `Basic ${authBase64}`,
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
+                'Accept': 'application/json'
             }
         });
 
+        // Cek jika response kosong atau error 401 (Unauthorized)
+        if (!response.ok) {
+            const errorText = await response.text();
+            return res.status(response.status).json({ 
+                error: "Midtrans menolak permintaan", 
+                status: response.status,
+                details: errorText 
+            });
+        }
+
         const data = await response.json();
-        
-        // Kirim hasil ke browser
         return res.status(200).json(data);
 
     } catch (error) {
         return res.status(500).json({ 
-            error: "Gagal menghubungi Midtrans", 
+            error: "Masalah pada Server/Koneksi", 
             details: error.message 
         });
     }
