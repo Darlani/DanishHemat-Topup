@@ -29,6 +29,7 @@ module.exports = async (req, res) => {
                 order_id: 'ORDER-' + Date.now(), // ID Unik transaksi
                 gross_amount: parseInt(price)    // Total nominal (Integer)
             },
+            custom_field1: userid,
             item_details: [{
                 id: product ? product.substring(0, 50) : 'item-id',
                 price: parseInt(price),
