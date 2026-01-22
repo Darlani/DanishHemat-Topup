@@ -213,11 +213,10 @@ async function prosesPembayaran() {
         return;
     }
 
-    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> MENYIAPKAN PEMBAYARAN...';
+    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> MENYIAPKAN...';
     btn.disabled = true;
 
     try {
-        // Menggunakan path relatif agar otomatis menyesuaikan domain Vercel
         const response = await fetch('/api/pay', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -229,47 +228,28 @@ async function prosesPembayaran() {
             })
         });
 
-        // Menangani jika respon bukan JSON (misal error 500 mentah)
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error("Server bermasalah (500). Cek Log Vercel.");
-        }
-
         const data = await response.json();
 
-        if (data && data.reference) {
+        if (response.ok && data.reference) {
             checkout.process(data.reference, {
-                successEvent: function(result) { alert("Pembayaran Berhasil!"); location.reload(); },
-                errorEvent: function(result) { alert("Pembayaran Gagal!"); btn.disabled = false; },
+                successEvent: function(result) { alert("Sukses!"); location.reload(); },
+                errorEvent: function(result) { alert("Gagal!"); btn.disabled = false; },
                 closeEvent: function(result) { 
                     btn.disabled = false; 
-                    btn.innerHTML = '<i class="fas fa-credit-card text-2xl"></i> BAYAR SEKARANG';
+                    btn.innerHTML = 'BAYAR SEKARANG';
                 }
             });
         } else {
-            alert("Duitku: " + (data.statusMessage || "Gagal mendapatkan token"));
+            alert("Error: " + (data.error || data.statusMessage || "Gagal Koneksi"));
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-credit-card text-2xl"></i> BAYAR SEKARANG';
+            btn.innerHTML = 'BAYAR SEKARANG';
         }
     } catch (err) {
-        alert("Sistem Error: " + err.message);
+        alert("Koneksi gagal: " + err.message);
         btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-credit-card text-2xl"></i> BAYAR SEKARANG';
+        btn.innerHTML = 'BAYAR SEKARANG';
     }
 }
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
