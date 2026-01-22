@@ -30,11 +30,11 @@ module.exports = async (req, res) => {
                 gross_amount: parseInt(price)    // Total nominal (Integer)
             },
             custom_field1: userid,
+            custom_field2: `${game} - ${product}`,
             item_details: [{
-                id: product ? product.substring(0, 50) : 'item-id',
+                id: product.substring(0, 50),
                 price: parseInt(price),
                 quantity: 1,
-                // Perbaikan: Memastikan nama tidak lebih dari 50 karakter
                 name: `${game.substring(0, 15)} ${product.substring(0, 30)}`.trim().substring(0, 50)
             }],
             customer_details: {
