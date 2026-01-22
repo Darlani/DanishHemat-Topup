@@ -34,7 +34,12 @@ module.exports = async (req, res) => {
             const order_id_fix = notification.order_id || "Tanpa ID";
             const nominal = notification.gross_amount || "0";
 
-            // FORMAT TANGGAL & JAM (WIB)
+            // --- TAMBAHAN: MENGAMBIL DETAIL GAME & PRODUK ---
+            // Midtrans menyimpan detail barang di dalam array item_details
+            const item = notification.item_details && notification.item_details[0] 
+                         ? notification.item_details[0].name 
+                         : "Produk Tidak Diketahui";
+
             const sekarang = new Date();
             const opsiWaktu = { 
                 timeZone: 'Asia/Jakarta', 
@@ -47,12 +52,12 @@ module.exports = async (req, res) => {
             };
             const waktuWIB = sekarang.toLocaleString('id-ID', opsiWaktu);
 
-            // PESAN DENGAN WAKTU DI ATAS ORDER ID
             const pesan = `✅ *PEMBAYARAN LUNAS*\n` +
                           `📅 ${waktuWIB} WIB\n\n` +
-                          `🆔 *Order ID:* ${order_id_fix}\n` +
+                          `🎮 *Game/Produk:* ${item}\n` +
                           `👤 *User ID Game:* ${user_id_game}\n` +
                           `💰 *Total:* Rp${parseInt(nominal).toLocaleString('id-ID')}\n` +
+                          `🆔 *Order ID:* ${order_id_fix}\n` +
                           `📱 *Status:* ${transactionStatus.toUpperCase()}`;
 
             await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
