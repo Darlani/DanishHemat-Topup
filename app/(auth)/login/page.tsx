@@ -127,7 +127,9 @@ const [errorMsg, setErrorMsg] = useState("");
           setTempProfile({ ...result.user, factorId: totpFactor.id });
           setIsPinStage(true);
         } else {
-          // Jika role Admin/Manager tapi belum pasang 2FA, paksa ke halaman Setup
+          // Jika role Admin/Manager tapi belum pasang 2FA, pasang cookie sesi lalu arahkan ke Setup
+          const expiresIn = result.session.expires_in;
+          document.cookie = `sb-access-token=${result.session.access_token}; path=/; max-age=${expiresIn}; Secure; SameSite=Lax`;
           router.push("/setup-2fa");
         }
       } else {

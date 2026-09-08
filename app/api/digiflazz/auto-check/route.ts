@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/utils/supabaseAdmin';
 import { providerRegistry } from '@/lib/providers/registry';
 import { reconcileOrderResolution } from '@/lib/providers/reconciliation.service';
-import { sandboxExecutionSimulator } from '@/lib/providers/sandbox/simulator';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,15 +57,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Akses Ditolak!' }, { status: 401 });
     }
 
-    // 2. CEK SAKLAR SIMULASI UMUM
-    const { data: st } = await supabaseAdmin
-      .from('store_settings')
-      .select('*')
-      .single();
-
-    const isLiveMode = (st as { is_live_mode?: boolean } | null)?.is_live_mode === true;
-
-    // Ambil order batch: status = 'Diproses', product_type = 'provider', limit 10
+    // Ambil hanya order LIVE dari public.orders.
     const { data: pendingOrdersData, error: fetchErr } = await supabaseAdmin
       .from('orders')
       .select(
@@ -89,31 +80,7 @@ export async function GET(req: Request) {
     // 3. LOOPING REKONSILIASI BATCH (SEKUENSIAL & TERISOLASI PER ORDER)
     for (const order of pendingOrders) {
       try {
-        // --- 0. ISOLASI SANDBOX ASYNCHRONOUS RESOLVER (OPTION 1) ---
-        const isSandboxOrder = !isLiveMode;
-        if (isSandboxOrder) {
-          // Periksa jeda waktu: minimal 3 detik sejak updated_at agar realistis
-          const orderUpdatedAt = order.updated_at ? new Date(order.updated_at).getTime() : 0;
-          const ageMs = Date.now() - orderUpdatedAt;
-
-          if (ageMs < 3000) {
-            console.log(`⏳ [AUTO-CHECK] Order Sandbox #${order.order_id} masih dalam masa tunggu simulasi (${ageMs}ms). Lewati.`);
-            continue;
-          }
-
-          console.log(`🧪 [AUTO-CHECK] Menyelesaikan order sandbox #${order.order_id} via SandboxExecutionSimulator...`);
-          await sandboxExecutionSimulator.resolveSandboxOrder({
-            id: order.id,
-            order_id: order.order_id,
-            customer_no: order.customer_no,
-            user_id: order.user_id,
-            user_email: order.email,
-            used_balance: order.used_balance
-          });
-          processedCount++;
-          continue; // PENTING: Order sandbox TIDAK BOLEH menyentuh adapter vendor nyata!
-        }
-        // Resolve executing provider code
+        // Resolve executing provider code for LIVE orders only.
         // For legacy rows where provider_used is null, default narrowly to 'DIGIFLAZZ' to preserve established behavior
         const providerCode = (order.provider_used || 'DIGIFLAZZ').trim().toUpperCase();
 

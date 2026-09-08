@@ -4,26 +4,10 @@ import { SANDBOX_SESSION_COOKIE, ensureSandboxWallet } from '@/lib/auth/tester';
 
 export const dynamic = 'force-dynamic';
 
-interface CachedUser {
-  id: string;
-  email?: string;
-  expiresAt: number;
-}
-const tokenUserCache = new Map<string, CachedUser>();
-
-function parseJwtPayload(token: string): { sub: string; email?: string; exp?: number } | null {
-  try {
-    const parts = token.split('.');
-    if (parts.length !== 3) return null;
-    const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
-    if (payload.exp && Math.floor(Date.now() / 1000) > payload.exp) {
-      return null;
-    }
-    if (!payload.sub) return null;
-    return { sub: payload.sub, email: payload.email, exp: payload.exp };
-  } catch {
-    return null;
-  }
+async function verifyToken(token: string): Promise<{ id: string; email?: string } | null> {
+  const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+  if (error || !user) return null;
+  return { id: user.id, email: user.email };
 }
 
 async function getAuthenticatedUser(req: Request): Promise<{ id: string; email?: string } | null> {
@@ -31,24 +15,7 @@ async function getAuthenticatedUser(req: Request): Promise<{ id: string; email?:
   const token = authHeader?.replace(/^Bearer\s+/i, '').trim();
 
   if (token) {
-    const cached = tokenUserCache.get(token);
-    if (cached && cached.expiresAt > Date.now()) {
-      return { id: cached.id, email: cached.email };
-    }
-    const payload = parseJwtPayload(token);
-    if (payload) {
-      const user = { id: payload.sub, email: payload.email };
-      tokenUserCache.set(token, {
-        ...user,
-        expiresAt: payload.exp ? payload.exp * 1000 : Date.now() + 60_000,
-      });
-      return user;
-    }
-    const { data: { user } } = await supabaseAdmin.auth.getUser(token);
-    if (user) {
-      tokenUserCache.set(token, { id: user.id, email: user.email, expiresAt: Date.now() + 60_000 });
-      return { id: user.id, email: user.email };
-    }
+    return verifyToken(token);
   }
 
   // Fallback to cookie-based auth
@@ -59,19 +26,7 @@ async function getAuthenticatedUser(req: Request): Promise<{ id: string; email?:
   if (sbAccessTokenMatch?.[1]) {
     try {
       const raw = decodeURIComponent(sbAccessTokenMatch[1]).trim();
-      const cached = tokenUserCache.get(raw);
-      if (cached && cached.expiresAt > Date.now()) return { id: cached.id, email: cached.email };
-      const payload = parseJwtPayload(raw);
-      if (payload) {
-        const user = { id: payload.sub, email: payload.email };
-        tokenUserCache.set(raw, {
-          ...user,
-          expiresAt: payload.exp ? payload.exp * 1000 : Date.now() + 60_000,
-        });
-        return user;
-      }
-      const { data: { user } } = await supabaseAdmin.auth.getUser(raw);
-      if (user) return { id: user.id, email: user.email };
+      return verifyToken(raw);
     } catch {
       // ignore
     }
@@ -86,19 +41,7 @@ async function getAuthenticatedUser(req: Request): Promise<{ id: string; email?:
       if (Array.isArray(parsed) && parsed[0]) parsed = parsed[0];
       const rawToken = typeof parsed === 'string' ? parsed : parsed?.access_token;
       if (rawToken) {
-        const cached = tokenUserCache.get(rawToken);
-        if (cached && cached.expiresAt > Date.now()) return { id: cached.id, email: cached.email };
-        const payload = parseJwtPayload(rawToken);
-        if (payload) {
-          const user = { id: payload.sub, email: payload.email };
-          tokenUserCache.set(rawToken, {
-            ...user,
-            expiresAt: payload.exp ? payload.exp * 1000 : Date.now() + 60_000,
-          });
-          return user;
-        }
-        const { data: { user } } = await supabaseAdmin.auth.getUser(rawToken);
-        if (user) return { id: user.id, email: user.email };
+        return verifyToken(rawToken);
       }
     } catch {
       // ignore
@@ -115,8 +58,17 @@ async function getAuthenticatedUser(req: Request): Promise<{ id: string; email?:
  */
 export async function GET(req: Request) {
   try {
+    const cookieHeader = req.headers.get('cookie') || '';
+    const hasAuthCredential = Boolean(
+      req.headers.get('authorization')?.trim()
+      || /(?:^|;)\s*sb-access-token=/.test(cookieHeader)
+      || /(?:^|;)\s*sb-[a-z0-9]+-auth-token=/.test(cookieHeader),
+    );
     const user = await getAuthenticatedUser(req);
     if (!user) {
+      if (hasAuthCredential) {
+        return NextResponse.json({ error: 'Autentikasi tidak valid.' }, { status: 401 });
+      }
       return NextResponse.json({ 
         authenticated: false, 
         isTester: false, 
@@ -125,7 +77,6 @@ export async function GET(req: Request) {
       });
     }
 
-    const cookieHeader = req.headers.get('cookie') || '';
     const hasSandboxCookie = cookieHeader
       .split(';')
       .some(c => c.trim().startsWith(`${SANDBOX_SESSION_COOKIE}=active`));
@@ -143,6 +94,10 @@ export async function GET(req: Request) {
         .eq('user_id', user.id)
         .maybeSingle()
     ]);
+
+    if (profileRes.error || walletRes.error) {
+      return NextResponse.json({ error: 'Tidak dapat memverifikasi status Sandbox.' }, { status: 503 });
+    }
 
     const userRole = (profileRes.data?.role || '').trim().toLowerCase();
     const isStaff = userRole === 'admin' || userRole === 'manager';
@@ -181,11 +136,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Autentikasi diperlukan.' }, { status: 401 });
     }
 
-    const { data: profile } = await supabaseAdmin
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('is_tester, role')
       .eq('id', user.id)
       .maybeSingle();
+
+    if (profileError) {
+      return NextResponse.json({ error: 'Tidak dapat memverifikasi akses tester.' }, { status: 503 });
+    }
 
     const role = (profile?.role || '').trim().toLowerCase();
     if (role === 'admin' || role === 'manager') {
@@ -245,4 +204,3 @@ export async function DELETE() {
 
   return response;
 }
-

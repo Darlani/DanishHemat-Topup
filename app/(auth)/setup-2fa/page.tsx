@@ -1,8 +1,8 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/utils/supabaseClient";
 import { useRouter } from "next/navigation";
-import { ShieldAlert, Loader2, ArrowRight } from "lucide-react";
+import { ShieldAlert, Loader2 } from "lucide-react";
 
 export default function Setup2FAPage() {
   const router = useRouter();
@@ -11,45 +11,85 @@ export default function Setup2FAPage() {
   const [pin, setPin] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const hasInitiatedRef = useRef(false);
 
   // Jalankan saat halaman pertama kali dimuat
   useEffect(() => {
+    if (hasInitiatedRef.current) return;
+    hasInitiatedRef.current = true;
+
     const setupMFA = async () => {
       setLoading(true);
+      setErrorMsg("");
+
       try {
-        // 1. Bersihkan 'draf' factor yang menggantung dari testing sebelumnya
-        const { data: listData } = await supabase.auth.mfa.listFactors();
+        // 1. Pastikan session user yang valid benar-benar tersedia
+        let { data: { session } } = await supabase.auth.getSession();
+
+        // Tangani race condition session hydration pada browser mount
+        if (!session?.user) {
+          const { data: userData } = await supabase.auth.getUser();
+          if (userData?.user) {
+            const { data: freshSession } = await supabase.auth.getSession();
+            session = freshSession.session;
+          }
+        }
+
+        if (!session?.user) {
+          setErrorMsg("Sesi login tidak ditemukan. Silakan login kembali.");
+          router.push("/login");
+          return;
+        }
+
+        // 2. Bersihkan 'draf' factor yang menggantung dari testing sebelumnya
+        const { data: listData, error: listError } = await supabase.auth.mfa.listFactors();
+        if (listError) {
+          throw listError;
+        }
+
         // Ambil dari properti .all sesuai standar tipe data Supabase terbaru
         const unverifiedFactors = (listData?.all || []).filter(
-          (f: any) => f.status === 'unverified' && f.factor_type === 'totp'
+          (f: { id: string; status: string; factor_type: string }) =>
+            f.status === "unverified" && f.factor_type === "totp"
         );
-        
+
         // Hapus draf lama
         for (const factor of unverifiedFactors) {
           await supabase.auth.mfa.unenroll({ factorId: factor.id });
         }
 
-        // 2. Meminta backend Supabase membuat secret & QR Code baru (Enrollment)
+        // 3. Meminta backend Supabase membuat secret & QR Code baru (Enrollment)
         const { data, error } = await supabase.auth.mfa.enroll({
           factorType: "totp",
-          issuer: "DanisPay", // Nama toko Bos yang akan muncul di Google Authenticator
-          friendlyName: "Admin Akses", // Nama spesifik agar tidak bentrok
+          issuer: "DanisPay", // Nama toko yang muncul di Google Authenticator
+          friendlyName: "Admin Akses",
         });
 
-        if (error) throw error;
+        if (error) {
+          throw error;
+        }
 
         setFactorId(data.id);
-        // Supabase mengembalikan format SVG murni, sangat ringan!
+        // Supabase mengembalikan format SVG murni (data URI)
         setQrCode(data.totp.qr_code);
-      } catch (err: any) {
-        setErrorMsg("Gagal membuat kode keamanan: " + err.message);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "Terjadi kesalahan saat memproses 2FA.";
+        if (
+          message.toLowerCase().includes("session") &&
+          !message.toLowerCase().includes("missing sub claim")
+        ) {
+          setErrorMsg("Sesi login tidak ditemukan. Silakan login kembali.");
+          router.push("/login");
+        } else {
+          setErrorMsg("Gagal membuat kode keamanan: " + message);
+        }
       } finally {
         setLoading(false);
       }
     };
 
-    setupMFA();
-  }, []);
+    void setupMFA();
+  }, [router]);
 
   const handleVerifyPin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,16 +100,27 @@ export default function Setup2FAPage() {
 
     try {
       // Mengirim PIN ke backend Supabase untuk divalidasi (Challenge & Verify)
-      const { data, error } = await supabase.auth.mfa.challengeAndVerify({
+      const { error } = await supabase.auth.mfa.challengeAndVerify({
         factorId,
         code: pin.trim(),
       });
 
       if (error) throw error;
 
+      // Ambil session terbaru yang sudah AAL2 setelah verifikasi PIN
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData?.session) {
+        const expiresInAdmin = sessionData.session.expires_in;
+        document.cookie = `sb-access-token=${sessionData.session.access_token}; path=/; max-age=${expiresInAdmin}; Secure; SameSite=Lax`;
+        document.cookie = `userRole=admin; path=/; max-age=${expiresInAdmin}; Secure; SameSite=Lax`;
+      }
+
+      // KEMBALIKAN PENANDA LOKAL UNTUK NAVBAR ADMIN
+      localStorage.setItem("isAdmin", "true");
+
       // Jika sukses, AAL naik ke AAL2. Langsung arahkan ke dashboard
       router.push("/admin");
-    } catch (err: any) {
+    } catch {
       setErrorMsg("KODE SALAH! Coba lagi, Bos.");
       setPin(""); // Kosongkan input jika salah
     } finally {

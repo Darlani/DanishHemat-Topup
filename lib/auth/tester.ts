@@ -11,7 +11,14 @@ export interface OrderEnvironmentResolution {
     | 'LIVE_DEFAULT'
     | 'UNAUTHORIZED_FORCED_LIVE'
     | 'MANAGEMENT_PERSONA_NON_CUSTOMER'
-    | 'SYSTEM_FALLBACK_LIVE';
+    | 'SYSTEM_ERROR';
+}
+
+export class OrderEnvironmentResolutionError extends Error {
+  constructor(message = 'Unable to resolve order environment.') {
+    super(message);
+    this.name = 'OrderEnvironmentResolutionError';
+  }
 }
 
 /**
@@ -38,11 +45,12 @@ export async function resolveOrderEnvironment(
     // They must never receive a customer Sandbox environment, even if the store is globally in sandbox.
     let userProfile: { is_tester?: boolean | null; role?: string | null } | null = null;
     if (userId) {
-      const { data: profile } = await supabaseAdmin
+      const { data: profile, error: profileError } = await supabaseAdmin
         .from('profiles')
         .select('is_tester, role')
         .eq('id', userId)
         .maybeSingle();
+      if (profileError) throw new OrderEnvironmentResolutionError('Unable to verify user profile.');
       userProfile = profile;
 
       if (isManagementRole(profile?.role)) {
@@ -51,11 +59,14 @@ export async function resolveOrderEnvironment(
     }
 
     // 1. Check Global Store Mode (canonical: store_settings.is_live_mode)
-    const { data: storeSettings } = await supabaseAdmin
+    const { data: storeSettings, error: storeSettingsError } = await supabaseAdmin
       .from('store_settings')
       .select('is_live_mode')
       .limit(1)
       .single();
+    if (storeSettingsError || !storeSettings) {
+      throw new OrderEnvironmentResolutionError('Unable to verify store environment.');
+    }
 
     const isGlobalLive = storeSettings?.is_live_mode ?? true;
 
@@ -91,8 +102,8 @@ export async function resolveOrderEnvironment(
     return { isSandbox: false, reason: 'UNAUTHORIZED_FORCED_LIVE' };
   } catch (err) {
     console.error('❌ [RESOLVE_ENV] Error resolving order environment:', err);
-    // Fail-safe to LIVE
-    return { isSandbox: false, reason: 'SYSTEM_FALLBACK_LIVE' };
+    if (err instanceof OrderEnvironmentResolutionError) throw err;
+    throw new OrderEnvironmentResolutionError();
   }
 }
 
@@ -148,4 +159,3 @@ export async function ensureSandboxWallet(userId: string): Promise<{ balance: nu
     return { balance: 0, error: err.message };
   }
 }
-

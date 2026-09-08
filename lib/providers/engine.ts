@@ -1,5 +1,4 @@
 import { supabaseAdmin } from '@/utils/supabaseAdmin';
-import { sandboxExecutionSimulator } from './sandbox/simulator';
 import { providerRegistry, ProviderRegistry } from './registry';
 import type {
   GenericExecutionInput,
@@ -267,35 +266,6 @@ export class ProviderExecutionEngine {
         orderId: orderIdentifier,
         attemptsMade: 0,
         error: orderErr ? orderErr.message : 'Order not found.',
-      };
-    }
-
-    // 1.5 Intercept Sandbox Order (Defense-in-Depth Protection)
-    const { data: storeSettings } = await this.supabase
-      .from('store_settings')
-      .select('is_live_mode')
-      .limit(1)
-      .maybeSingle();
-
-    const isGlobalLive = storeSettings?.is_live_mode ?? true;
-    const isSandboxOrder = !isGlobalLive;
-
-    if (isSandboxOrder) {
-      const sandboxOutcome = await sandboxExecutionSimulator.dispatchSandboxOrder({
-        id: order.id,
-        order_id: order.order_id,
-        sku: order.sku,
-        customer_no: order.customer_no
-      });
-
-      return {
-        success: sandboxOutcome.success,
-        status: sandboxOutcome.status === 'FAILED' ? 'FAILED' : 'SUCCESS',
-        orderId: order.order_id,
-        winningProvider: sandboxOutcome.winningProvider,
-        winningSku: order.sku,
-        attemptsMade: 0,
-        error: sandboxOutcome.message
       };
     }
 

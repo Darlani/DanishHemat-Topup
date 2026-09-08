@@ -83,56 +83,56 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Order ID diperlukan' }, { status: 400 });
     }
 
-    // --- 3. CEK SAKLAR SIMULASI ---
-    const { data: st } = await supabaseAdmin
-      .from('store_settings')
-      .select('*')
-      .single();
-
-    const isLiveMode = (st as { is_live_mode?: boolean } | null)?.is_live_mode === true;
-
-    if (!isLiveMode) {
-      return NextResponse.json(
-        { error: 'Mode Simulasi: Dilarang cek status ke vendor!' },
-        { status: 403 }
-      );
-    }
-
-    // --- 4. AMBIL DATA ORDER DARI DATABASE ---
+    // --- 3. RESOLVE ORDER TABLE EXPLICITLY ---
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderIdInput);
-    let orderQuery = supabaseAdmin
+    const liveQuery = supabaseAdmin
       .from('orders')
       .select(
         'id, order_id, api_ref_id, sku, customer_no, user_id, email, user_contact, payment_method, total_amount, status, category, product_name, price, used_balance, buy_price, provider_used, vendor_sku, sn, created_at'
-      );
+      )
+      .limit(2);
+    const sandboxQuery = supabaseAdmin
+      .from('sandbox_orders')
+      .select('id')
+      .limit(2);
 
     if (isUUID) {
-      orderQuery = orderQuery.or(`id.eq.${orderIdInput},order_id.eq.${orderIdInput}`);
+      liveQuery.or(`id.eq.${orderIdInput},order_id.eq.${orderIdInput}`);
+      sandboxQuery.or(`id.eq.${orderIdInput},order_id.eq.${orderIdInput}`);
     } else {
-      orderQuery = orderQuery.eq('order_id', orderIdInput);
+      liveQuery.eq('order_id', orderIdInput);
+      sandboxQuery.eq('order_id', orderIdInput);
     }
 
-    const { data: orderData, error: fetchErr } = await orderQuery.maybeSingle();
+    const [{ data: liveMatches, error: liveError }, { data: sandboxMatches, error: sandboxError }] = await Promise.all([
+      liveQuery,
+      sandboxQuery,
+    ]);
 
-    if (fetchErr || !orderData) {
-      // --- 4.5 PROTEKSI ORDER SANDBOX (MUTLAK DILARANG CEK KE VENDOR RIIL) ---
-      let sbQuery = supabaseAdmin.from('sandbox_orders').select('id');
-      if (isUUID) {
-        sbQuery = sbQuery.or(`id.eq.${orderIdInput},order_id.eq.${orderIdInput}`);
-      } else {
-        sbQuery = sbQuery.eq('order_id', orderIdInput);
-      }
-      const { data: sbOrder } = await sbQuery.maybeSingle();
-      if (sbOrder) {
-        return NextResponse.json(
-          { error: 'Pesanan Sandbox: Dilarang memeriksa status ke vendor eksternal!' },
-          { status: 403 }
-        );
-      }
+    if (liveError || sandboxError) {
+      return NextResponse.json({ error: 'Status pesanan tidak dapat diverifikasi.' }, { status: 500 });
+    }
+
+    if ((liveMatches?.length || 0) > 1 || (sandboxMatches?.length || 0) > 1) {
+      return NextResponse.json({ error: 'Permintaan status pesanan tidak valid.' }, { status: 409 });
+    }
+
+    const hasLiveMatch = (liveMatches?.length || 0) === 1;
+    const hasSandboxMatch = (sandboxMatches?.length || 0) === 1;
+
+    if (hasLiveMatch && hasSandboxMatch) {
+      return NextResponse.json({ error: 'Permintaan status pesanan tidak valid.' }, { status: 409 });
+    }
+
+    if (hasSandboxMatch) {
+      return NextResponse.json({ error: 'Status pesanan tidak tersedia.' }, { status: 403 });
+    }
+
+    if (!hasLiveMatch) {
       return NextResponse.json({ error: 'Order tidak ditemukan di DB' }, { status: 404 });
     }
 
-    const order = orderData as OrderRecord;
+    const order = liveMatches[0] as OrderRecord;
 
     // --- 5. PROTEKSI ORDER > 90 HARI ---
     const createdDate = new Date(order.created_at);

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { isPaymentAllowed } from "@/utils/LogicPembayaran";
 import { authenticateRequest, isManagementRole } from "@/utils/serverAuth";
 import { supabaseAdmin } from "@/utils/supabaseAdmin";
-import { resolveOrderEnvironment } from "@/lib/auth/tester";
+import { OrderEnvironmentResolutionError, resolveOrderEnvironment } from "@/lib/auth/tester";
 
 type DatabaseProduct = {
   id?: string;
@@ -290,7 +290,18 @@ export async function POST(request: Request) {
       }
     }
 
-    const envRes = await resolveOrderEnvironment(request, authenticatedUserId);
+    let envRes: Awaited<ReturnType<typeof resolveOrderEnvironment>>;
+    try {
+      envRes = await resolveOrderEnvironment(request, authenticatedUserId);
+    } catch (error) {
+      if (error instanceof OrderEnvironmentResolutionError) {
+        return NextResponse.json(
+          { error: "Lingkungan transaksi tidak dapat diverifikasi. Silakan coba lagi." },
+          { status: 503 },
+        );
+      }
+      throw error;
+    }
     const isSandbox = envRes.isSandbox;
 
     const orderId = `DANISH-${crypto.randomUUID().replace(/-/g, "").toUpperCase()}`;
@@ -321,7 +332,6 @@ export async function POST(request: Request) {
       segment_power: segmentPower,
       stand_meter: standMeter,
       desc: description,
-      ...(isSandbox ? { is_sandbox: true } : {}),
     };
 
     const { data: createdOrder, error: rpcError } = await supabaseAdmin.rpc(
@@ -330,6 +340,7 @@ export async function POST(request: Request) {
         p_reservation_id: reservationId,
         p_external_base_amount: String(expectedBaseAmount),
         p_authenticated_user_id: authenticatedUserId,
+        p_environment: isSandbox ? "SANDBOX" : "LIVE",
         p_order_data: orderPayload,
       },
     );

@@ -1,11 +1,45 @@
 import { NextResponse } from 'next/server';
+import { authenticateRequest } from '@/utils/serverAuth';
 import { supabaseAdmin } from '@/utils/supabaseAdmin';
 import { sandboxExecutionSimulator } from '@/lib/providers/sandbox/simulator';
 
 export const dynamic = 'force-dynamic';
 
+async function getAuthenticatedUser(req: Request) {
+  const authentication = await authenticateRequest(req);
+  if (authentication.ok) return authentication.user;
+
+  const cookieStore = req.headers.get('cookie') || '';
+  const accessTokenMatch = cookieStore.match(/sb-access-token=([^;]+)/i);
+  const token = accessTokenMatch?.[1] ? decodeURIComponent(accessTokenMatch[1]).trim() : '';
+  if (!token) return null;
+
+  const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+  return error || !user ? null : user;
+}
+
 export async function POST(req: Request) {
   try {
+    const user = await getAuthenticatedUser(req);
+    if (!user) {
+      return NextResponse.json({ error: 'Autentikasi diperlukan.' }, { status: 401 });
+    }
+
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .select('role, is_tester')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profileError) {
+      return NextResponse.json({ error: 'Tidak dapat memverifikasi akses tester.' }, { status: 503 });
+    }
+
+    const role = profile?.role?.trim().toLowerCase();
+    if (role !== 'member' || profile?.is_tester !== true) {
+      return NextResponse.json({ error: 'Akses ditolak.' }, { status: 403 });
+    }
+
     const body = await req.json().catch(() => ({}));
     const orderIdInput = typeof body.order_id === 'string' ? body.order_id.trim() : '';
 
@@ -17,7 +51,8 @@ export async function POST(req: Request) {
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderIdInput);
     let query = supabaseAdmin
       .from('sandbox_orders')
-      .select('id, order_id, status, sku, customer_no, user_id, email, used_balance');
+      .select('id, order_id, status, sku, customer_no, user_id, email, used_balance')
+      .eq('user_id', user.id);
 
     if (isUUID) {
       query = query.or(`id.eq.${orderIdInput},order_id.eq.${orderIdInput}`);
@@ -27,27 +62,6 @@ export async function POST(req: Request) {
 
     const { data: initialOrder, error: fetchErr } = await query.maybeSingle();
     const order = initialOrder;
-
-    // Proteksi ketat: jika order ditemukan di tabel orders LIVE, tolak simulasi secara mutlak
-    if (!order) {
-      let liveQuery = supabaseAdmin
-        .from('orders')
-        .select('id, order_id');
-      if (isUUID) {
-        liveQuery = liveQuery.or(`id.eq.${orderIdInput},order_id.eq.${orderIdInput}`);
-      } else {
-        liveQuery = liveQuery.eq('order_id', orderIdInput);
-      }
-      const { data: liveOrder } = await liveQuery.maybeSingle();
-
-      if (liveOrder) {
-        // PROTEKSI MUTLAK: Order LIVE dilarang keras disimulasikan!
-        return NextResponse.json(
-          { error: 'Akses Ditolak: Pesanan ini adalah pesanan LIVE riil dan dilarang disimulasikan!' },
-          { status: 403 }
-        );
-      }
-    }
 
     if (fetchErr || !order) {
       return NextResponse.json({ error: 'Pesanan tidak ditemukan.' }, { status: 404 });
@@ -110,4 +124,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-

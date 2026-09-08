@@ -43,6 +43,12 @@ export default function Navbar({ isSidebarOpen = false, setIsSidebarOpen }: Navb
 useEffect(() => {
     const checkAuth = async () => {
       if (typeof window !== "undefined") {
+        // Jangan paksa signOut jika sedang berada di halaman login, setup 2FA, atau register
+        if (pathname === '/login' || pathname === '/setup-2fa' || pathname === '/register') {
+          setIsCheckingAuth(false);
+          return;
+        }
+
         // 1. CEK COOKIE TERLEBIH DAHULU SEBAGAI PATOKAN UTAMA (1 HARI)
         const hasCookie = document.cookie.includes('sb-access-token');
         if (!hasCookie) {
