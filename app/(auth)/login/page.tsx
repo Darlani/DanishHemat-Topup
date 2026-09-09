@@ -142,7 +142,6 @@ const [errorMsg, setErrorMsg] = useState("");
 
         // Simpan token ke cookie agar proxy.ts bisa membacanya
         document.cookie = `sb-access-token=${result.session.access_token}; path=/; max-age=${expiresIn}; Secure; SameSite=Lax`;
-        document.cookie = `userRole=member; path=/; max-age=${expiresIn}; Secure; SameSite=Lax`;
 
         // KEMBALIKAN PENANDA LOKAL UNTUK NAVBAR
         localStorage.setItem("isUser", "true");
@@ -182,9 +181,8 @@ const [errorMsg, setErrorMsg] = useState("");
 // Ambil session terbaru yang sudah AAL2 setelah verifikasi PIN
       const { data: sessionData } = await supabase.auth.getSession();
       if (sessionData?.session) {
-        const expiresInAdmin = sessionData.session.expires_in;
-        document.cookie = `sb-access-token=${sessionData.session.access_token}; path=/; max-age=${expiresInAdmin}; Secure; SameSite=Lax`;
-        document.cookie = `userRole=${tempProfile.role}; path=/; max-age=${expiresInAdmin}; Secure; SameSite=Lax`;
+        const expiresInAdmin = sessionData.session.expires_in;
+        document.cookie = `sb-access-token=${sessionData.session.access_token}; path=/; max-age=${expiresInAdmin}; Secure; SameSite=Lax`;
       }
       
       // KEMBALIKAN PENANDA LOKAL UNTUK NAVBAR ADMIN

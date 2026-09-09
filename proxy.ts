@@ -73,7 +73,6 @@ async function validateAuthRoute(
   }
 
   const token = request.cookies.get('sb-access-token')?.value;
-  const userRole = request.cookies.get('userRole')?.value?.toLowerCase();
 
   // Jika tidak ada token di cookie sama sekali, lempar ke login
   if (!token) {
@@ -111,12 +110,37 @@ async function validateAuthRoute(
       };
     }
 
-    // --- Otorisasi Berdasarkan Role ---
-    // Jika mengakses /admin, pastikan rolenya memiliki hak akses
+    const authUser = (await res.json()) as { id?: string };
+
     if (isAdminRoute) {
-      const isAuthorizedAdmin = userRole === 'manager' || userRole === 'admin';
-      if (!isAuthorizedAdmin) {
-        // Jika member biasa mencoba masuk /admin, kembalikan ke dashboard user
+      if (!authUser.id) {
+        return {
+          requiresAction: true,
+          response: NextResponse.redirect(new URL('/user', request.url)),
+        };
+      }
+
+      const profileResponse = await fetch(
+        `${supabaseUrl}/rest/v1/profiles?id=eq.${encodeURIComponent(authUser.id)}&select=id,role`,
+        {
+          headers: {
+            'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY!,
+            'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`,
+          },
+        },
+      );
+
+      if (!profileResponse.ok) {
+        return {
+          requiresAction: true,
+          response: NextResponse.redirect(new URL('/user', request.url)),
+        };
+      }
+
+      const profiles = (await profileResponse.json()) as Array<{ id?: string; role?: string | null }>;
+      const role = profiles[0]?.role?.trim().toLowerCase();
+
+      if (role !== 'manager' && role !== 'admin') {
         return {
           requiresAction: true,
           response: NextResponse.redirect(new URL('/user', request.url)),

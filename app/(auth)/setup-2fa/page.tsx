@@ -112,7 +112,6 @@ export default function Setup2FAPage() {
       if (sessionData?.session) {
         const expiresInAdmin = sessionData.session.expires_in;
         document.cookie = `sb-access-token=${sessionData.session.access_token}; path=/; max-age=${expiresInAdmin}; Secure; SameSite=Lax`;
-        document.cookie = `userRole=admin; path=/; max-age=${expiresInAdmin}; Secure; SameSite=Lax`;
       }
 
       // KEMBALIKAN PENANDA LOKAL UNTUK NAVBAR ADMIN

@@ -172,7 +172,7 @@ export async function POST(req: Request) {
 
     // Set HttpOnly cookie valid for 1 hour (3600 seconds)
     response.cookies.set(SANDBOX_SESSION_COOKIE, 'active', {
-      httpOnly: false, // Accessible by UI to display alert banner, but verified securely server-side
+      httpOnly: true,
       path: '/',
       maxAge: 3600,
       sameSite: 'lax',
@@ -197,9 +197,11 @@ export async function DELETE() {
   });
 
   response.cookies.set(SANDBOX_SESSION_COOKIE, '', {
+    httpOnly: true,
     path: '/',
     maxAge: 0,
-    sameSite: 'lax'
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production'
   });
 
   return response;

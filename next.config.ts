@@ -1,7 +1,9 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
-  allowedDevOrigins: ["*"], 
+const scriptSrc = process.env.NODE_ENV === 'production'
+  ? "'self' 'unsafe-inline' https://challenges.cloudflare.com"
+  : "'self' 'unsafe-eval' 'unsafe-inline' https://challenges.cloudflare.com";
 
+const nextConfig = {
   images: {
     remotePatterns: [
       {
@@ -20,7 +22,7 @@ const nextConfig = {
         headers: [
            {
             key: 'Content-Security-Policy',
-            value: "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://challenges.cloudflare.com; frame-src 'self' https://challenges.cloudflare.com; connect-src 'self' https://ptdezfwyamskazfwswxh.supabase.co wss://ptdezfwyamskazfwswxh.supabase.co https://challenges.cloudflare.com https://api.ipify.org;",
+            value: `script-src ${scriptSrc}; frame-src 'self' https://challenges.cloudflare.com; connect-src 'self' https://ptdezfwyamskazfwswxh.supabase.co wss://ptdezfwyamskazfwswxh.supabase.co https://challenges.cloudflare.com https://api.ipify.org;`
           },
         ],
       },
