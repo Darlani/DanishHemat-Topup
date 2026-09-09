@@ -21,7 +21,7 @@ F-01, F-02, F-03, F-04, F-05, F-07, F-09, F-10 Phase 1, F-11, and F-12 have reco
 | F-03 | Sandbox/LIVE table boundary | PASS / CLOSED WITH COVERAGE CAVEAT | Table-native routing, dedicated Sandbox worker, check-status boundary, hardened RPC environment contract | Phase 1 and Phase 2 evidence passed | LIVE transactional production coverage and synthetic collision remain unverified |
 | F-04 | Proxy role authorization | PASS / CLOSED | `/admin` role resolved from verified identity and `profiles.role` | Forged role cookie cannot grant/revoke admin page access; API boundary remains protected | No remaining evidence gap recorded |
 | F-05 | Environment resolver fail-open | IMPLEMENTED + VERIFIED | Fail-closed environment resolution | Regression verified during F-03; no active LIVE fallback path | No remaining evidence gap recorded |
-| F-06 | Low / informational | LOW / INFORMATIONAL | No remediation recorded | Not changed by this closure record | Remains future review item if scope expands |
+| F-06 | Low / informational | CLOSED / INFORMATIONAL | No remediation required; DELETE only clears caller-owned Sandbox session cookie | Unauthenticated DELETE tested by read-only review; no activation, DB query, or state mutation | Impact limited to self-logout/session disarm |
 | F-07 | Sandbox session cookie exposure | PASS / CLOSED | `dapay_sandbox_session` made HttpOnly | Activation HTTP 200; cookie attributes verified; GET/DELETE lifecycle verified; malformed cookie rejected | No remaining evidence gap recorded |
 | F-08 | Proxy IP trust / blacklist fail-open | CONDITIONAL / OPEN | Deferred pending deployment and trusted-proxy proof | Trusted production proxy/header contract not proven | Historical VPS + Cloudflare context is not current deployment proof |
 | F-09 | Wildcard development origin | PASS / CLOSED | Removed `allowedDevOrigins: ["*"]` | Localhost and core-page smoke passed; arbitrary Origin did not receive wildcard/reflected ACAO; HMR available; build exit code 0 | No remaining evidence gap recorded |
@@ -154,7 +154,7 @@ F-01, F-02, F-03, F-04, F-05, F-07, F-09, F-10 Phase 1, F-11, and F-12 have reco
 
 - **F-03 LIVE transactional production coverage:** NOT EXECUTED because `store_settings.is_live_mode=false`; no production mode change was made.
 - **F-03 synthetic cross-table collision:** UNVERIFIED; no existing collision was found and no synthetic collision was created.
-- **F-06:** LOW / INFORMATIONAL; no changed status supplied.
+- **F-06:** CLOSED / INFORMATIONAL. Unauthenticated DELETE only clears caller-owned `dapay_sandbox_session` with HttpOnly, Path=/, Max-Age=0, SameSite=Lax, and production Secure. It cannot activate Sandbox, affect another user, mutate DB/wallet/order/ledger/profile state, or grant tester access.
 - **F-08 deployment-dependent IP trust:** CONDITIONAL / OPEN; trusted production proxy and header contract are not proven.
 - **F-10 Phase 2:** OPEN; production `unsafe-inline` remains and nonce/hash hardening is not implemented.
 - **F-13 evidence limitation:** This document formalizes supplied evidence only; it does not independently reproduce tests or add new runtime evidence.
