@@ -45,6 +45,7 @@ next-env.d.ts
 # Prisma
 /prisma/dev.db
 /prisma/dev.db-journal
+/dev.db
 
 # Supabase temp files
 supabase/.temp/
@@ -62,18 +63,10 @@ repomix-output.txt
 /scratch/
 /.agents/workflows/
 
+# Internal DaPay documentation
+*.md
+
 # Local scripts / experiments
 /scripts/
-
-# Internal DaPay documentation
-/AGENTS.md
-/CODE_REVIEW_CHECKLIST.md
-/CODEX_MASTER_PROMPT.md
-/DAPAY_ADMIN_R2_BLUEPRINT.md
-/DAPAY_ADMIN_UI_PROGRESS.md
-/DAPAY_MASTER_SYSTEM_v1.md
-/DAPAY_PROJECT_PROGRESS.md
-/DAPAY_STATUS_STANDARD_v1.md
-/DAPAY_TRANSACTION_LIFECYCLE_v2.md
-/DAPAY_WALLET_COINS_CONTRACT.md
-/dev.db
+/gas.bat
+/checkpoint.bat
