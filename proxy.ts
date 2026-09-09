@@ -11,6 +11,22 @@ type AuthCheckResult = {
   response?: NextResponse;
 };
 
+function generateRequestNonce(): string {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary);
+}
+
+function buildPrototypeCsp(nonce: string): string {
+  const scriptSources = process.env.NODE_ENV === 'production'
+    ? `'self' 'unsafe-inline' 'nonce-${nonce}' https://challenges.cloudflare.com`
+    : `'self' 'unsafe-eval' 'unsafe-inline' 'nonce-${nonce}' https://challenges.cloudflare.com`;
+
+  return `script-src ${scriptSources}; frame-src 'self' https://challenges.cloudflare.com; connect-src 'self' https://ptdezfwyamskazfwswxh.supabase.co wss://ptdezfwyamskazfwswxh.supabase.co https://challenges.cloudflare.com https://api.ipify.org;`;
+}
+
 /**
  * Validasi IP pengunjung terhadap database blacklist (PostgREST).
  * Fail-open jika terjadi kendala koneksi DB agar tidak menyebabkan downtime massal.
@@ -198,6 +214,13 @@ export default async function proxy(request: NextRequest) {
   }
 
   // 3. Izin Akses
+  if (process.env.DAPAY_NONCE_PROTOTYPE === 'true') {
+    const nonce = generateRequestNonce();
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('Content-Security-Policy', buildPrototypeCsp(nonce));
+    return NextResponse.next({ request: { headers: requestHeaders } });
+  }
+
   return NextResponse.next();
 }
 
